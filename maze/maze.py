@@ -18,15 +18,15 @@ from pybrain3.rl.experiments import Experiment
 
 
 # create the maze with walls (1)
-envmatrix = array([[1, 1, 1, 1, 1, 1, 1, 1, 1],
-                   [1, 0, 0, 1, 0, 0, 0, 0, 1],
-                   [1, 0, 0, 1, 0, 0, 1, 0, 1],
-                   [1, 0, 0, 1, 0, 0, 1, 0, 1],
-                   [1, 0, 0, 1, 0, 1, 1, 0, 1],
-                   [1, 0, 0, 0, 0, 0, 1, 0, 1],
-                   [1, 1, 1, 1, 1, 1, 1, 0, 1],
-                   [1, 0, 0, 0, 0, 0, 0, 0, 1],
-                   [1, 1, 1, 1, 1, 1, 1, 1, 1]])
+envmatrix = array([[1, 1, 1, 1, 1, 1, 1, 1, 1],     #  0 -  8
+                   [1, 0, 0, 1, 0, 0, 0, 0, 1],     #  9 - 17
+                   [1, 0, 0, 1, 0, 0, 1, 0, 1],     # 18 - 26
+                   [1, 0, 0, 1, 0, 0, 1, 0, 1],     # 27 - 35 
+                   [1, 0, 0, 1, 0, 1, 1, 0, 1],     # 36 - 44
+                   [1, 0, 0, 0, 0, 0, 1, 0, 1],     # 45 - 53
+                   [1, 1, 1, 1, 1, 1, 1, 0, 1],     # 54 - 62
+                   [1, 0, 0, 0, 0, 0, 0, 0, 1],     # 63 - 71
+                   [1, 1, 1, 1, 1, 1, 1, 1, 1]])    # 72 - 81
 
 env = Maze(envmatrix, (7, 7))
 
@@ -48,18 +48,34 @@ agent = LearningAgent(table, learner)
 
 # create experiment
 experiment = Experiment(task, agent)
-
+ 
 # prepare plotting
-pylab.gray()
+# pylab.gray()
 pylab.ion()
 
-for i in range(1000):
-
-    # interact with the environment (here in batch mode)
-    experiment.doInteractions(100)
+imax = 1000
+for i in range(1, imax+1):
+     
+    ## interact with the environment (here in batch mode)
+    # experiment.doInteractions(100)
+    for j in range(100):
+        experiment.doInteractions(1)
+        # print( env )
     agent.learn()
     agent.reset()
-
+ 
     # and draw the table
-    pylab.pcolor(table.params.reshape(81,4).max(1).reshape(9,9))
-    pylab.draw()
+    if i % 10 == 0:
+        field = table.params.reshape(81,4).max(1).reshape(9,9)
+        pylab.pcolor(field)
+        pylab.draw()
+        pylab.pause(0.000001)
+        
+    if i % 100 == 0:
+        print(i, "/", imax)
+
+
+print("Done")
+
+pylab.ioff()    
+pylab.show()
