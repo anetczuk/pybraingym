@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 from __future__ import print_function
 
 ###########################################################################
@@ -12,23 +13,12 @@ from __future__ import print_function
 ###########################################################################
 __author__ = 'Thomas Rueckstiess, ruecksti@in.tum.de'
 
-
-from gi.repository import GObject
-GObject.threads_init()
-
-import matplotlib
-matplotlib.use('GTK3Cairo')
-# matplotlib.use('GTK3Agg')
-# matplotlib.use('Qt4Agg')
-
-
-from pybrain.tools.shortcuts import buildNetwork
-from pybrain.rl.environments.cartpole import CartPoleEnvironment, CartPoleRenderer, BalanceTask
-from pybrain.rl.agents.learning import LearningAgent
-from pybrain.rl.experiments import EpisodicExperiment
+from pybrain3.tools.shortcuts import buildNetwork
+from pybrain3.rl.environments.cartpole import CartPoleEnvironment, CartPoleRenderer, BalanceTask
+from pybrain3.rl.agents.learning import LearningAgent
+from pybrain3.rl.experiments import EpisodicExperiment
 from scipy import mean
 import sys
-import pylab
 
 episodes = 1
 epilen = 200
@@ -59,19 +49,15 @@ agent.module._setParameters([arg1, arg2, arg3, arg4])
 # create experiment
 experiment = EpisodicExperiment(task, agent)
 experiment.doEpisodes(episodes)
-
+print("x2")
 # run environment
 ret = []
 for n in range(agent.history.getNumSequences()):
+    print("x")
     returns = agent.history.getSequence(n)
     reward = returns[2]
     ret.append( sum(reward, 0).item() )
 
 # print results
 print(ret, "mean:",mean(ret))
-
-if env.getRenderer() is not None:
-    env.getRenderer().stop()
-
-pylab.ioff()
-pylab.show()
+#env.getRenderer().stop()
