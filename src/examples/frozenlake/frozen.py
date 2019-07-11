@@ -27,7 +27,7 @@
 import gym
 import time
 
-from pybrain_openai import OpenAiEnvironment, OpenAiTask, Transformation 
+from pybrain_openai import OpenAiEnvironment, OpenAiTask, Transformation, processLastReward
 
 from pybrain.rl.learners.valuebased import ActionValueTable
 from pybrain.rl.learners import SARSA, Q, QLambda
@@ -40,17 +40,28 @@ from random import choice
 import numpy as np
 
 
+## observation: current field, begins always in 0
+
+## OpenAi action:
+##   0 -- left
+##   1 -- down
+##   2 -- right
+##   3 -- up
+
+## reward: 1 when reaching goal, otherwise 0
+
+
 ## =============================================================================
 
 
 class FrozenTransformation(Transformation):
     
     def observation(self, observationValue):
-        ## OpenAi environment returns number, but Pybrain agent expects array with single int
+        ## OpenAi environment returns number, but PyBrain agent expects array with single integer
         return [observationValue]
     
     def action(self, actionValue):
-        ## OpenAi environment expects one integer value, but Pybrain returns array with single float 
+        ## OpenAi environment expects one integer value, but PyBrain returns array with single float 
         return int(actionValue[0])
 
 
@@ -104,8 +115,8 @@ task = OpenAiTask( env )
 
 # create value table and initialize with ones
 table = ActionValueTable(openai_env.observation_space.n, openai_env.action_space.n)
-# table.initialize(1.)
 table.initialize(0.)
+# table.initialize( np.random.rand( table.paramdim ) )
 
 # create agent with controller and learner - use SARSA(), Q() or QLambda() here
 learner = SARSA()
@@ -116,21 +127,12 @@ agent = LearningAgent(table, learner)
 
 experiment = Experiment(task, agent)
 
+render_steps = False
+imax = 2000
+
 
 print("\nStarting")
 
-
-## observation: always 0
-
-## action:
-##   0 -- left
-##   1 -- down
-##   2 -- right
-##   3 -- up
-    
-render_steps = False
-imax = 10000
-# imax = 1
 
 # prepare plotting
 if render_steps:
@@ -153,21 +155,19 @@ for i in range(1, imax+1):
         if render_steps:
             env.render()
             time.sleep(1)
-        
-    experiment.doInteractions(1)        ## store final stage for learner
-        
+    
+    processLastReward(task, agent)              ## store final reward for learner
+
     agent.learn()
     agent.reset()
     
     if i % 100 == 0:
-        #print("Epoch ended:", i + "/" + imax, "total reward:", total_reward, "rate:", total_reward / i)
         print("Epoch ended: %i/%i total reward: %d rate: %f" % (i, imax, total_reward, total_reward / i) )
         
     # draw the table
     if render_steps and (i % 10 == 0):
         plotData()
  
-
 
 print("\n\nDone")
 

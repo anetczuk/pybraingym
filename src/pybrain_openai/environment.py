@@ -24,8 +24,6 @@
 
 from pybrain.rl.environments.environment import Environment
 
-import numpy as np
-
 
 class OpenAiEnvironment(Environment):
     
@@ -54,20 +52,23 @@ class OpenAiEnvironment(Environment):
         if self.transform is not None:
             self.observation = self.transform.observation(self.observation)
         
+    def sampleAction(self):
+        return self.env.action_space.sample()
+        
     def render(self):
         self.env.render()
         
     def close(self):
         self.env.close()
-    
-    
+
+
     
 class Transformation:
     
     def observation(self, observation):
-        """ Transform observation value received from OpenAi. """
+        """ Transform observation value received from OpenAi. Transformed value is passed to PyBrain. """
         return observation
 
     def action(self, action):
-        """ Transform action value before passing to OpenAi. """
+        """ Transform action value received from PyBrain and pass result to OpenAi. """
         return action
