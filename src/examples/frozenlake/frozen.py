@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # MIT License
 #
@@ -131,7 +131,7 @@ render_steps = False
 imax = 2000
 
 
-print("\nStarting")
+print("Starting")
 
 
 # prepare plotting
