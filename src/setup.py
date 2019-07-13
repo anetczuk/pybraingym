@@ -10,11 +10,11 @@ from setuptools import setup, find_packages
 setup(
     name="pybrain-openai",
     version="0.1",
-    description="Wrapper classes for PyBrain to use OpenAi environments.",
+    description="Wrapper classes for PyBrain to use OpenAi Gym environments.",
     license="MIT",
     author='Arkadiusz Netczuk',
     author_email='dev.arnet@gmail.com',
     keywords="Neural Networks Machine Learning",
 #     url="",
-    packages=find_packages(exclude=['examples'])
+    packages=find_packages(exclude=['examples', 'test_pybrain_openai', 'runtests.py'])
 )
