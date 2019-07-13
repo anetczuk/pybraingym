@@ -63,7 +63,7 @@ class Digitizer:
             bins = [fromValue]
             innerNum = numBins - 2
             if innerNum > 1:
-                innerBins = Digitizer.buildGroup(fromValue, toValue, innerNum, False)
+                innerBins = Digitizer.buildBins(fromValue, toValue, innerNum, False)
                 bins += innerBins
             bins.append( toValue )
             return bins

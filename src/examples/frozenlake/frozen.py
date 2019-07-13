@@ -25,9 +25,9 @@
 
 
 import gym
-import time
 
-from pybrain_openai import OpenAiEnvironment, OpenAiTask, Transformation, doEpisode, processLastReward
+from pybraingym import OpenAiEnvironment, OpenAiTask, Transformation
+from pybraingym.experiment import doEpisode, processLastReward
 
 from pybrain.rl.learners.valuebased import ActionValueTable
 from pybrain.rl.learners import SARSA, Q, QLambda

@@ -25,7 +25,7 @@
 import unittest
 import numpy.testing as npt
 
-from pybrain_openai import Digitizer, ArrayDigitizer
+from pybraingym.digitizer import Digitizer, ArrayDigitizer
 
 
 class DigitizerTest(unittest.TestCase):
