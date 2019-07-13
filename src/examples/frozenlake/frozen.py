@@ -26,7 +26,7 @@
 
 import gym
 
-from pybraingym import OpenAiEnvironment, OpenAiTask, Transformation
+from pybraingym import GymEnvironment, GymTask, Transformation
 from pybraingym.experiment import doEpisode, processLastReward
 
 from pybrain.rl.learners.valuebased import ActionValueTable
@@ -42,7 +42,7 @@ import numpy as np
 
 ## observation: current field, begins always in 0
 
-## OpenAi action:
+## Gym action:
 ##   0 -- left
 ##   1 -- down
 ##   2 -- right
@@ -57,11 +57,11 @@ import numpy as np
 class FrozenTransformation(Transformation):
 
     def observation(self, observationValue):
-        ## OpenAi environment returns number, but PyBrain agent expects array with single integer
+        ## Gym environment returns number, but PyBrain agent expects array with single integer
         return [observationValue]
 
     def action(self, actionValue):
-        ## OpenAi environment expects one integer value, but PyBrain returns array with single float
+        ## Gym environment expects one integer value, but PyBrain returns array with single float
         return int(actionValue[0])
 
 
@@ -110,8 +110,8 @@ def plotData():
 
 openai_env = gym.make('FrozenLake-v0')
 
-env = OpenAiEnvironment( openai_env, FrozenTransformation() )
-task = OpenAiTask( env )
+env = GymEnvironment( openai_env, FrozenTransformation() )
+task = GymTask( env )
 
 # create value table and initialize with ones
 table = ActionValueTable(openai_env.observation_space.n, openai_env.action_space.n)

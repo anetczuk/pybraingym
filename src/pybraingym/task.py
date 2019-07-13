@@ -25,7 +25,7 @@
 from pybrain.rl.environments.task import Task
 
 
-class OpenAiTask(Task):
+class GymTask(Task):
 
     def __init__(self, environment):
         Task.__init__(self, environment)

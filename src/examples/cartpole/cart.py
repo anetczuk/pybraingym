@@ -27,7 +27,7 @@
 # import time
 import gym
 
-from pybraingym import OpenAiEnvironment, OpenAiTask, Transformation
+from pybraingym import GymEnvironment, GymTask, Transformation
 from pybraingym.experiment import SampleExperiment, doEpisode, processLastReward
 from pybraingym.digitizer import Digitizer, ArrayDigitizer
 
@@ -56,7 +56,7 @@ class CartTransformation(Transformation):
         return [ state ]
      
     def action(self, actionValue):
-        ## OpenAi environment expects one integer value, but PyBrain returns array with single float
+        ## Gym environment expects one integer value, but PyBrain returns array with single float
         state = actionValue[0]
         return int(state)
 
@@ -64,11 +64,11 @@ class CartTransformation(Transformation):
 ## =============================================================================
 
 
-## OpenAi expected action:
+## Gym expected action:
 ##   0 -- left
 ##   1 -- right
 
-## openai observation: [position, velocity, pole angle, pole velocity]
+## Gym observation: [position, velocity, pole angle, pole velocity]
 ##        position: (-2.5, 2.5)
 ##        velocity (-inf, inf)
 ##        pole angle (-41.8, 41.8)
@@ -92,9 +92,9 @@ print("Pole velocity bins:", poleVelocityGroup)
 
 observationDigitizer = ArrayDigitizer( [ cartPositionGroup, cartVelocityGroup, poleAngleGroup, poleVelocityGroup ] )
 
-env = OpenAiEnvironment(openai_env, CartTransformation(observationDigitizer), True)
+env = GymEnvironment(openai_env, CartTransformation(observationDigitizer), True)
 
-task = OpenAiTask(env)
+task = GymTask(env)
  
 # create value table and initialize with ones
 table = ActionValueTable(observationDigitizer.states, 2)

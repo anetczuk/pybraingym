@@ -25,7 +25,7 @@
 from pybrain.rl.environments.environment import Environment
 
 
-class OpenAiEnvironment(Environment):
+class GymEnvironment(Environment):
 
     def __init__(self, openAiEnv, transformation = None, cumulativeReward = False, render = False):
         Environment.__init__(self)
@@ -82,9 +82,9 @@ class OpenAiEnvironment(Environment):
 class Transformation:
 
     def observation(self, observation):
-        """ Transform observation value received from OpenAi. Transformed value is passed to PyBrain. """
+        """ Transform observation value received from OpenAi Gym. Transformed value is passed to PyBrain. """
         return observation
 
     def action(self, action):
-        """ Transform action value received from PyBrain and pass result to OpenAi. """
+        """ Transform action value received from PyBrain and pass result to OpenAi Gym. """
         return action
