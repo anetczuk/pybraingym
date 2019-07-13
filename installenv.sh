@@ -22,5 +22,6 @@ python3 -m venv $ENV_DIR
 
 ## pip install gym
 ## pip install matplotlib==2.2.0
+## pip install pygobject
 ## pip install requests==2.10.0
 
