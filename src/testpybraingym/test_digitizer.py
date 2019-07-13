@@ -41,17 +41,17 @@ class DigitizerTest(unittest.TestCase):
         digitizer = Digitizer([0.0])
         states = digitizer.numstates()
         self.assertEqual(states, 2)
-        
+
     def test_digitize(self):
         digitizer = Digitizer( [0.0] )
         indexes = digitizer.digitize( [-1.0, 1.0] )
         npt.assert_equal(indexes, [0, 1])
-        
+
     def test_state(self):
         digitizer = Digitizer( [0.0] )
         indexes = digitizer.digitize( [-1.0, 1.0] )
         npt.assert_equal(indexes, [0, 1])
-        
+
     def test_buildBins_bins_bad(self):
         self.assertRaises( AssertionError, Digitizer.buildBins, -1.0, 1.0, 1 )
 
@@ -65,7 +65,7 @@ class DigitizerTest(unittest.TestCase):
     def test_buildBins_bins03(self):
         bins = Digitizer.buildBins(0.0, 12.0, 3)
         npt.assert_equal(bins, [4.0, 8.0])
-        
+
     def test_buildBins_bins03_edges(self):
         bins = Digitizer.buildBins(0.0, 12.0, 3, True)
         npt.assert_equal(bins, [0.0, 12.0])
@@ -84,7 +84,7 @@ class ArrayDigitizerTest(unittest.TestCase):
     def tearDown(self):
         ## Called after testfunction was executed
         pass
-        
+
     def test_numstates(self):
         digitizer = ArrayDigitizer( [[0.0], [0.0, 10.0]] )
         states = digitizer.numstates()
@@ -123,4 +123,3 @@ class ArrayDigitizerTest(unittest.TestCase):
         digitizer = ArrayDigitizer( [[5.0], [3.0, 6.0]] )
         state = digitizer.state( [0.0, 5.0] )
         npt.assert_equal(state, 2)
-        

@@ -6,7 +6,7 @@ import time
 env = gym.make('FrozenLake-v0')
 
 env.reset()
-   
+
 print("\nStarting")
 
 imax = 1000
@@ -23,10 +23,10 @@ for i in range(1, imax+1):
     if done:
         print("epoch done")
         env.reset()
-        
+
     if i % 100 == 0:
-        print(i, "/", imax)    
-     
+        print(i, "/", imax)
+
 env.close()
-   
+
 print("Done")

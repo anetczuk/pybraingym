@@ -29,6 +29,6 @@ class OpenAiTask(Task):
 
     def __init__(self, environment):
         Task.__init__(self, environment)
-        
+
     def getReward(self):
         return self.env.getReward()

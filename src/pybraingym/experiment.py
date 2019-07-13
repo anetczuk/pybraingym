@@ -28,14 +28,14 @@ import time
 def doEpisode(experiment, render = False):
     task = experiment.task
     env = task.env
-    
+
     if env.done:
         env.reset()
-        
+
     if render:
         env.render()
         time.sleep(0.02)
-        
+
     while(env.done == False):
         experiment.doInteractions(1)
         if render:
@@ -57,11 +57,11 @@ def processLastReward(task, agent):
 
 
 class SampleExperiment(object):
-    
+
     def __init__(self, env):
         self.env = env
         self.stepid = 0
-        
+
     def doInteractions(self, number = 1):
         for _ in range(number):
             self._oneInteraction()
@@ -72,4 +72,3 @@ class SampleExperiment(object):
         action = self.env.sampleAction()
         self.env.performAction(action)
         return self.env.reward
-    

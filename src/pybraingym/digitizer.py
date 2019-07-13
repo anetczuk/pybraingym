@@ -27,23 +27,23 @@ import numpy as np
 
 class Digitizer:
     """ Performs discretization of numbers. """
-    
+
     def __init__(self, points):
         self.bins = points
         self.states = len(self.bins) + 1
-    
+
     def numstates(self):
         return self.states
-    
+
     def digitize(self, data):
         return np.digitize(data, self.bins)
-    
+
     def index(self, digitized):
         return digitized
 
     def state(self, data):
         return self.digitize(data)
-    
+
     @staticmethod
     def buildBins(fromValue, toValue, numBins, includeEdges = False):
         if includeEdges == False:
@@ -67,12 +67,12 @@ class Digitizer:
                 bins += innerBins
             bins.append( toValue )
             return bins
-    
+
 
 
 class ArrayDigitizer:
     """ Performs discretization of 1-D arrays. """
-    
+
     def __init__(self, pointsLists):
         self.bins = pointsLists
         self.binsSize = len(self.bins)
@@ -82,7 +82,7 @@ class ArrayDigitizer:
 
     def numstates(self):
         return self.states
-    
+
     def digitize(self, data):
         assert len(data) == self.binsSize, "data size have to be the same as number of bin groups"
         ret = []

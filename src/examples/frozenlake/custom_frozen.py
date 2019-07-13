@@ -19,7 +19,7 @@ lr_rate = 0.81
 gamma = 0.96
 
 Q = np.zeros((env.observation_space.n, env.action_space.n))
-    
+
 def choose_action(state):
     action=0
     if np.random.uniform(0, 1) < epsilon:
@@ -37,11 +37,11 @@ def learn(state, state2, reward, action):
 for episode in range(total_episodes):
     state = env.reset()
     t = 0
-    
+
     while t < max_steps:
         env.render()
-        action = choose_action(state)  
-        state2, reward, done, info = env.step(action)  
+        action = choose_action(state)
+        state2, reward, done, info = env.step(action)
         learn(state, state2, reward, action)
         state = state2
         t += 1

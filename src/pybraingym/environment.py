@@ -26,7 +26,7 @@ from pybrain.rl.environments.environment import Environment
 
 
 class OpenAiEnvironment(Environment):
-    
+
     def __init__(self, openAiEnv, transformation = None, cumulativeReward = False, render = False):
         Environment.__init__(self)
         self.env = openAiEnv
@@ -38,13 +38,13 @@ class OpenAiEnvironment(Environment):
         self.transform = transformation
         self.doCumulative = cumulativeReward
         self.doRender = render
-    
+
     def setRendering(self, render = True):
         self.doRender = render
-    
+
     def getSensors(self):
         return self.observation
-        
+
     def performAction(self, action):
         if self.transform is not None:
             action = self.transform.action(action)
@@ -67,20 +67,20 @@ class OpenAiEnvironment(Environment):
         self.observation = self.env.reset()
         if self.transform is not None:
             self.observation = self.transform.observation(self.observation)
-        
+
     def sampleAction(self):
         return self.env.action_space.sample()
-        
+
     def render(self):
         self.env.render()
-        
+
     def close(self):
         self.env.close()
 
 
-    
+
 class Transformation:
-    
+
     def observation(self, observation):
         """ Transform observation value received from OpenAi. Transformed value is passed to PyBrain. """
         return observation

@@ -55,13 +55,13 @@ import numpy as np
 
 
 class FrozenTransformation(Transformation):
-    
+
     def observation(self, observationValue):
         ## OpenAi environment returns number, but PyBrain agent expects array with single integer
         return [observationValue]
-    
+
     def action(self, actionValue):
-        ## OpenAi environment expects one integer value, but PyBrain returns array with single float 
+        ## OpenAi environment expects one integer value, but PyBrain returns array with single float
         return int(actionValue[0])
 
 
@@ -149,14 +149,14 @@ for i in range(1, imax+1):
     processLastReward(task, agent)              ## store final reward for learner
 
     agent.learn()
-    
+
     if i % 100 == 0:
         print("Episode ended: %i/%i total reward: %d rate: %f" % (i, imax, total_reward, total_reward / i) )
-        
+
     # draw the table
     if render_steps and (i % 10 == 0):
         plotData()
- 
+
 
 print("\n\nDone")
 
@@ -173,6 +173,6 @@ print( "\nBest actions:\n", getBestReadableActions(), sep='' )
 
 if render_steps:
     plotData()
-    pylab.ioff()    
+    pylab.ioff()
     pylab.show()
 
