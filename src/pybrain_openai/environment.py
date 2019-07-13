@@ -27,14 +27,20 @@ from pybrain.rl.environments.environment import Environment
 
 class OpenAiEnvironment(Environment):
     
-    def __init__(self, openAiEnv, transformation = None):
+    def __init__(self, openAiEnv, transformation = None, cumulativeReward = False, render = False):
         Environment.__init__(self)
         self.env = openAiEnv
         self.observation = None
-        self.reward = None
+        self.reward = 0
+        self.cumReward = 0
         self.done = True
         self.info = None
         self.transform = transformation
+        self.doCumulative = cumulativeReward
+        self.doRender = render
+    
+    def setRendering(self, render = True):
+        self.doRender = render
     
     def getSensors(self):
         return self.observation
@@ -43,11 +49,21 @@ class OpenAiEnvironment(Environment):
         if self.transform is not None:
             action = self.transform.action(action)
         self.observation, self.reward, self.done, self.info = self.env.step(action)
+        self.cumReward += self.reward
         if self.transform is not None:
             self.observation = self.transform.observation(self.observation)
 
+    def getReward(self):
+        if self.doCumulative:
+            return self.cumReward
+        else:
+            return self.reward
+
     def reset(self):
         self.done = False
+        self.reward = 0
+        self.cumReward = 0
+        self.info = None
         self.observation = self.env.reset()
         if self.transform is not None:
             self.observation = self.transform.observation(self.observation)

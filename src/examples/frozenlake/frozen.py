@@ -27,7 +27,7 @@
 import gym
 import time
 
-from pybrain_openai import OpenAiEnvironment, OpenAiTask, Transformation, processLastReward
+from pybrain_openai import OpenAiEnvironment, OpenAiTask, Transformation, doEpisode, processLastReward
 
 from pybrain.rl.learners.valuebased import ActionValueTable
 from pybrain.rl.learners import SARSA, Q, QLambda
@@ -142,24 +142,13 @@ if render_steps:
 
 total_reward = 0
 for i in range(1, imax+1):
-    if env.done:
-        env.reset()
-        
-    if render_steps:
-        env.render()
+    agent.reset()
+    doEpisode( experiment, render_steps )
 
-    while(env.done == False):
-        experiment.doInteractions(1)
-        total_reward += env.reward
-        
-        if render_steps:
-            env.render()
-            time.sleep(1)
-    
+    total_reward += env.cumReward
     processLastReward(task, agent)              ## store final reward for learner
 
     agent.learn()
-    agent.reset()
     
     if i % 100 == 0:
         print("Episode ended: %i/%i total reward: %d rate: %f" % (i, imax, total_reward, total_reward / i) )

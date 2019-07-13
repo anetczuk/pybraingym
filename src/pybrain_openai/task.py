@@ -31,4 +31,4 @@ class OpenAiTask(Task):
         Task.__init__(self, environment)
         
     def getReward(self):
-        return self.env.reward
+        return self.env.getReward()

@@ -22,6 +22,26 @@
 #
 
 
+import time
+
+
+def doEpisode(experiment, render = False):
+    task = experiment.task
+    env = task.env
+    
+    if env.done:
+        env.reset()
+        
+    if render:
+        env.render()
+        time.sleep(0.02)
+        
+    while(env.done == False):
+        experiment.doInteractions(1)
+        if render:
+            env.render()
+            time.sleep(0.02)
+
 
 def processLastReward(task, agent):
     """ Store last reward when episode is done.
