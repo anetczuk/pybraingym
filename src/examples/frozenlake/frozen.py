@@ -162,7 +162,7 @@ for i in range(1, imax+1):
     agent.reset()
     
     if i % 100 == 0:
-        print("Epoch ended: %i/%i total reward: %d rate: %f" % (i, imax, total_reward, total_reward / i) )
+        print("Episode ended: %i/%i total reward: %d rate: %f" % (i, imax, total_reward, total_reward / i) )
         
     # draw the table
     if render_steps and (i % 10 == 0):

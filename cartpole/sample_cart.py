@@ -3,10 +3,16 @@
 import time
 import gym
 
+import atexit
+
 
 env = gym.make('CartPole-v0')
 env.reset()
-  
+
+
+atexit.register( env.close )
+
+
 print("\nStarting")
  
 for _ in range(10000):
@@ -20,7 +26,3 @@ for _ in range(10000):
 env.close()
   
 print("Done")
- 
- 
-# ## fix import error (sys.meta_path)
-# env.env.close()
