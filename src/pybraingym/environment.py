@@ -27,20 +27,31 @@ from pybrain.rl.environments.environment import Environment
 
 class GymEnvironment(Environment):
 
-    def __init__(self, openAiEnv, transformation = None, cumulativeReward = False, render = False):
+    def __init__(self, gymRawEnv):
         Environment.__init__(self)
-        self.env = openAiEnv
+        self.env = gymRawEnv
         self.observation = None
         self.reward = 0
         self.cumReward = 0
         self.done = True
         self.info = None
-        self.transform = transformation
-        self.doCumulative = cumulativeReward
-        self.doRender = render
+        self.transform = None
+        self.doCumulative = False
+        self.doRender = False
 
     def setRendering(self, render = True):
         self.doRender = render
+
+    def getCumulativeRewardMode(self):
+        return self.doCumulative
+
+    def setCumulativeRewardMode(self, cumulativeReward = True):
+        self.doCumulative = cumulativeReward
+        
+    def setTransformation(self, transformation):
+        self.transform = transformation
+
+    # ==========================================================================
 
     def getSensors(self):
         return self.observation
@@ -53,12 +64,6 @@ class GymEnvironment(Environment):
         if self.transform is not None:
             self.observation = self.transform.observation(self.observation)
 
-    def getReward(self):
-        if self.doCumulative:
-            return self.cumReward
-        else:
-            return self.reward
-
     def reset(self):
         self.done = False
         self.reward = 0
@@ -67,6 +72,14 @@ class GymEnvironment(Environment):
         self.observation = self.env.reset()
         if self.transform is not None:
             self.observation = self.transform.observation(self.observation)
+
+    # ==========================================================================
+
+    def getReward(self):
+        if self.doCumulative:
+            return self.cumReward
+        else:
+            return self.reward
 
     def sampleAction(self):
         return self.env.action_space.sample()
@@ -88,3 +101,4 @@ class Transformation:
     def action(self, action):
         """ Transform action value received from PyBrain and pass result to OpenAi Gym. """
         return action
+

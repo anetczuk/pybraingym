@@ -108,13 +108,13 @@ def plotData():
 ## =============================================================================
 
 
-openai_env = gym.make('FrozenLake-v0')
+gymRawEnv = gym.make('FrozenLake-v0')
 
-env = GymEnvironment( openai_env, FrozenTransformation() )
-task = GymTask( env )
+task = GymTask.createTask( gymRawEnv )
+task.env.setTransformation( FrozenTransformation() )
 
 # create value table and initialize with ones
-table = ActionValueTable(openai_env.observation_space.n, openai_env.action_space.n)
+table = ActionValueTable(gymRawEnv.observation_space.n, gymRawEnv.action_space.n)
 table.initialize(0.)
 # table.initialize( np.random.rand( table.paramdim ) )
 
@@ -145,7 +145,7 @@ for i in range(1, imax+1):
     agent.reset()
     doEpisode( experiment, render_steps )
 
-    total_reward += env.cumReward
+    total_reward += task.getCumulativeRevard()
     processLastReward(task, agent)              ## store final reward for learner
 
     agent.learn()
@@ -160,10 +160,10 @@ for i in range(1, imax+1):
 
 print("\n\nDone")
 
-env.reset()
-env.render()
+task.reset()
+task.render()
 
-env.close()
+task.close()
 
 
 print( "\nValues:\n", table.params.reshape(16, 4), sep='' )

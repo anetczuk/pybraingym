@@ -74,8 +74,8 @@ class CartTransformation(Transformation):
 ##        pole angle (-41.8, 41.8)
 ##        pole vel: (-inf, inf)
 
-openai_env = gym.make('CartPole-v1')
-# openai_env = gym.make('CartPole-v0')
+gymRawEnv = gym.make('CartPole-v1')
+# gymRawEnv = gym.make('CartPole-v0')
 
 ## env.tags['wrapper_config.TimeLimit.max_episode_steps'] = 500
 
@@ -91,10 +91,11 @@ print("Pole angle bins:", poleAngleGroup)
 print("Pole velocity bins:", poleVelocityGroup)
 
 observationDigitizer = ArrayDigitizer( [ cartPositionGroup, cartVelocityGroup, poleAngleGroup, poleVelocityGroup ] )
+transformation = CartTransformation(observationDigitizer)
 
-env = GymEnvironment(openai_env, CartTransformation(observationDigitizer), True)
-
-task = GymTask(env)
+task = GymTask.createTask(gymRawEnv)
+task.env.setTransformation( transformation )
+task.env.setCumulativeRewardMode()
  
 # create value table and initialize with ones
 table = ActionValueTable(observationDigitizer.states, 2)
@@ -122,7 +123,7 @@ print("\nStarting")
 
 
 ## prevents "ImportError: sys.meta_path is None, Python is likely shutting down"
-atexit.register( env.close )
+atexit.register( task.close )
 
 
 total_reward = 0
@@ -131,13 +132,13 @@ for i in range(1, imax+1):
     agent.reset()
     doEpisode( experiment, render_steps )
     
-    total_reward += env.cumReward
+    total_reward += task.getCumulativeRevard()
     processLastReward(task, agent)              ## store final reward for learner
         
     agent.learn()
     
     if i % 100 == 0:
-        print("Episode ended: %i/%i reward: %d total reward: %d rate: %f" % (i, imax, env.cumReward, total_reward, total_reward / i) )
+        print("Episode ended: %i/%i reward: %d total reward: %d rate: %f" % (i, imax, task.getCumulativeRevard(), total_reward, total_reward / i) )
         
     if i % 1000 == 0:
         doEpisode( experiment, True )
@@ -145,5 +146,5 @@ for i in range(1, imax+1):
 
 print("\nDone")
 
-env.close()
+task.close()
 
