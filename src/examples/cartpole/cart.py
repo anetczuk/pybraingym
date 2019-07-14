@@ -141,7 +141,10 @@ for i in range(1, imax+1):
         print("Episode ended: %i/%i reward: %d total reward: %d rate: %f" % (i, imax, task.getCumulativeRevard(), total_reward, total_reward / i) )
         
     if i % 1000 == 0:
+        prevlearning = agent.learning
+        agent.learning = False
         doEpisode( experiment, True )
+        agent.learning = prevlearning
 
 
 print("\nDone")

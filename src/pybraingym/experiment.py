@@ -25,22 +25,30 @@
 import time
 
 
-def doEpisode(experiment, render = False):
+def doEpisode(experiment, demonstrate = False):
     task = experiment.task
     env = task.env
+    agent = experiment.agent
 
     if env.done:
         env.reset()
 
-    if render:
+    agent.newEpisode()
+
+    if demonstrate == False:
+        while(env.done == False):
+            experiment.doInteractions(1)
+        return
+
+    prevlearning = agent.learning
+    agent.learning = False
+    while(True):
         env.render()
         time.sleep(0.02)
-
-    while(env.done == False):
+        if env.done:
+            break
         experiment.doInteractions(1)
-        if render:
-            env.render()
-            time.sleep(0.02)
+    agent.learning = prevlearning    
 
 
 def processLastReward(task, agent):
