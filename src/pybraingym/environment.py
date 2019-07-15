@@ -23,12 +23,20 @@
 
 
 from pybrain.rl.environments.environment import Environment
+from gym.spaces.discrete import Discrete
 
 
 class GymEnvironment(Environment):
 
     def __init__(self, gymRawEnv):
         Environment.__init__(self)
+        
+        actionSpace = gymRawEnv.action_space
+        if type(actionSpace) == Discrete:
+            self.indim = 1
+            self.discreteActions = True
+            self.numActions = actionSpace.n
+
         self.env = gymRawEnv
         self.observation = None
         self.reward = 0
@@ -60,9 +68,10 @@ class GymEnvironment(Environment):
         if self.transform is not None:
             action = self.transform.action(action)
         self.observation, self.reward, self.done, self.info = self.env.step(action)
-        self.cumReward += self.reward
         if self.transform is not None:
             self.observation = self.transform.observation(self.observation)
+            self.reward = self.transform.reward(self.reward)
+        self.cumReward += self.reward
 
     def reset(self):
         self.done = False
@@ -94,11 +103,15 @@ class GymEnvironment(Environment):
 
 class Transformation:
 
-    def observation(self, observation):
+    def observation(self, observationValue):
         """ Transform observation value received from OpenAi Gym. Transformed value is passed to PyBrain. """
-        return observation
+        return observationValue
 
-    def action(self, action):
+    def action(self, actionValue):
         """ Transform action value received from PyBrain and pass result to OpenAi Gym. """
-        return action
+        return actionValue
+    
+    def reward(self, rewardValue):
+        """ Transform reward value received from OpenAi Gym and pass result to PyBrain. """
+        return rewardValue
 
