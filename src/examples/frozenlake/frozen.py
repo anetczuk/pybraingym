@@ -26,7 +26,7 @@
 
 import gym
 
-from pybraingym import GymEnvironment, GymTask, Transformation
+from pybraingym import GymTask, Transformation
 from pybraingym.experiment import doEpisode, processLastReward
 
 from pybrain.rl.learners.valuebased import ActionValueTable

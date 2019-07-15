@@ -27,20 +27,16 @@
 # import time
 import gym
 
-from pybraingym import GymEnvironment, GymTask, Transformation
-from pybraingym.experiment import SampleExperiment, doEpisode, processLastReward
+from pybraingym import GymTask, Transformation
+from pybraingym.experiment import doEpisode, processLastReward
 from pybraingym.digitizer import Digitizer, ArrayDigitizer
 
-from pybrain.rl.learners.valuebased import ActionValueTable, ActionValueNetwork
+from pybrain.rl.learners.valuebased import ActionValueTable
 from pybrain.rl.learners import SARSA, Q, QLambda
 from pybrain.rl.agents import LearningAgent
 from pybrain.rl.experiments import Experiment
-from pybrain.tools.shortcuts import buildNetwork
 
 import atexit
-from scipy import where
-from random import choice
-import numpy as np
 
 
 ## =============================================================================
@@ -94,17 +90,18 @@ observationDigitizer = ArrayDigitizer( [ cartPositionGroup, cartVelocityGroup, p
 transformation = CartTransformation(observationDigitizer)
 
 task = GymTask.createTask(gymRawEnv)
-task.env.setTransformation( transformation )
-task.env.setCumulativeRewardMode()
+env = task.env
+env.setTransformation( transformation )
+env.setCumulativeRewardMode()
  
 # create value table and initialize with ones
-table = ActionValueTable(observationDigitizer.states, 2)
+table = ActionValueTable(observationDigitizer.states, env.numActions)
 table.initialize(0.0)
 # table.initialize( np.random.rand( table.paramdim ) )
  
 # create agent with controller and learner - use SARSA(), Q() or QLambda() here
-## alpha -- learning rate
-## gamma -- discount factor
+## alpha -- learning rate (preference of new information)
+## gamma -- discount factor (importance of future reward)
 
 # learner = Q(0.5, 0.99)
 learner = SARSA(0.5, 0.99)
@@ -141,10 +138,7 @@ for i in range(1, imax+1):
         print("Episode ended: %i/%i reward: %d total reward: %d rate: %f" % (i, imax, task.getCumulativeRevard(), total_reward, total_reward / i) )
         
     if i % 1000 == 0:
-        prevlearning = agent.learning
-        agent.learning = False
         doEpisode( experiment, True )
-        agent.learning = prevlearning
 
 
 print("\nDone")
