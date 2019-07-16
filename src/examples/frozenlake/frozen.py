@@ -145,7 +145,7 @@ for i in range(1, imax+1):
     agent.reset()
     doEpisode( experiment, render_steps )
 
-    total_reward += task.getCumulativeRevard()
+    total_reward += task.getCumulativeReward()
     processLastReward(task, agent)              ## store final reward for learner
 
     agent.learn()

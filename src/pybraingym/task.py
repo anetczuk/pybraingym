@@ -40,7 +40,7 @@ class GymTask(Task):
     def getReward(self):
         return self.env.getReward()
 
-    def getCumulativeRevard(self):
+    def getCumulativeReward(self):
         return self.env.cumReward
     
     def reset(self):
