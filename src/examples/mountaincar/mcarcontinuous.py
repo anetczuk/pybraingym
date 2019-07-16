@@ -113,7 +113,7 @@ experiment = Experiment(task, agent)
 
 
 render_steps = False
-imax = 4000
+imax = 2000
 
 
 print("\nStarting")
@@ -134,7 +134,7 @@ for i in range(1, imax+1):
         
     agent.learn()
     
-    if i % 100 == 0:
+    if i % 20 == 0:
         print("Episode ended: %i/%i reward: %d total reward: %d rate: %f" % (i, imax, task.getCumulativeRevard(), total_reward, total_reward / i) )
         
     if i % 100 == 0:
