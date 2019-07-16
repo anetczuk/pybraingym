@@ -52,6 +52,35 @@ class DigitizerTest(unittest.TestCase):
         indexes = digitizer.digitize( [-1.0, 1.0] )
         npt.assert_equal(indexes, [0, 1])
 
+    def test_value_badInput_negative(self):
+        digitizer = Digitizer( [0.0, 2.0] )
+        self.assertRaises( ValueError, digitizer.value, -1 )
+
+    def test_value_badInput_positive(self):
+        digitizer = Digitizer( [0.0, 2.0] )
+        self.assertRaises( ValueError, digitizer.value, 3 )
+
+    def test_value_0(self):
+        digitizer = Digitizer( [0.0, 2.0] )
+        value = digitizer.value(0)
+        npt.assert_array_almost_equal(value, 0.0, 2)
+
+    def test_value_1(self):
+        digitizer = Digitizer( [0.0, 2.0] )
+        value = digitizer.value(1)
+        npt.assert_array_almost_equal(value, 1.0, 2)
+
+    def test_value_2(self):
+        digitizer = Digitizer( [0.0, 2.0] )
+        value = digitizer.value(2)
+        npt.assert_array_almost_equal(value, 2.0, 2)
+
+    def test_value_states(self):
+        digitizer = Digitizer( [0.0, 2.0] )
+        value = digitizer.value( digitizer.states - 1 )
+        npt.assert_array_almost_equal(value, 2.0, 2)
+
+
     def test_buildBins_bins_bad(self):
         self.assertRaises( AssertionError, Digitizer.buildBins, -1.0, 1.0, 1 )
 

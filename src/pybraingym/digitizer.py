@@ -43,6 +43,18 @@ class Digitizer:
 
     def state(self, data):
         return self.digitize(data)
+    
+    def value(self, state):
+        if state < 0:
+            raise ValueError("invalid state:", state)
+        if state >= self.states:
+            raise ValueError("invalid state:", state)
+        if state == 0:
+            return self.bins[ 0 ]
+        if state == self.states -1:
+            return self.bins[ state-1 ]
+        ## normal case
+        return (self.bins[ state ] + self.bins[ state-1 ]) / 2
 
     @staticmethod
     def buildBins(fromValue, toValue, numBins, includeEdges = False):
