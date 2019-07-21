@@ -32,6 +32,9 @@ from fib import Fib
 
 
 
+def objectFactory():
+    return Fib()
+
 def processWorker( args ):
     fib = args[0]
     num = args[1]
@@ -47,15 +50,14 @@ if __name__ == '__main__':
     fib_arg = 37
 
 
-    BaseManager.register('Fib', Fib)        
-
     procStartTime = time.time()
 
     ## spawn managers -- one process per one manager
     managers = []
     for _ in range(0, procnum):
-        manager = BaseManager() 
+        manager = BaseManager()
         managers.append( manager )
+        manager.register('Fib', objectFactory)
         manager.start()
 
     calcList = []
