@@ -26,8 +26,8 @@
 
 import time
 
-from multiprocessing import Pool
 from multiprocessing.managers import BaseManager
+from multiprocessing.dummy import Pool as ThreadPool
 from fib import Fib
 
 
@@ -47,19 +47,24 @@ if __name__ == '__main__':
     fib_arg = 37
 
 
-    BaseManager.register('Fib', Fib)
-    manager = BaseManager() 
-    manager.start()
-        
+    BaseManager.register('Fib', Fib)        
 
     procStartTime = time.time()
 
-    calcList = []
+    ## spawn managers -- one process per one manager
+    managers = []
     for _ in range(0, procnum):
-        calc = manager.Fib()
+        manager = BaseManager() 
+        managers.append( manager )
+        manager.start()
+
+    calcList = []
+    for man in managers:
+        calc = man.Fib()
         calcList.append( (calc, fib_arg) )
-    
-    with Pool( processes=procnum ) as pool:
+
+    ## spawn threads that wait for calculation results from managers
+    with ThreadPool( processes=procnum ) as pool:
         pool.map(processWorker, calcList)
 
     procEndTime = time.time()
