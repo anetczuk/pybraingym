@@ -24,4 +24,6 @@ python3 -m venv $ENV_DIR
 ## pip install matplotlib==2.2.0
 ## pip install pygobject
 ## pip install requests==2.10.0
+## pip install box2d-py
+## pip install universe
 
