@@ -45,7 +45,7 @@ while True:
             else:
                 action = left
         rewards = []
-env.render()
+    env.render()
 
 
 ## fix import error (sys.meta_path)
