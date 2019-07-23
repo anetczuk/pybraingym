@@ -31,6 +31,7 @@ def fib_classic(num):
         return 1
     return fib_classic(num - 1) + fib_classic(num - 2)
 
+
 def fib_iter(num):
     if num < 1:
         return 0
@@ -43,7 +44,6 @@ def fib_iter(num):
         prev2 = prev1
         prev1 = curr
     return prev1
-
 
 
 class Fib:

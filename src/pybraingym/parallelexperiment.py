@@ -39,7 +39,7 @@ class SingleExperiment:
     def setAgent(self, newAgent):
         self.exp.agent = newAgent
 
-    def doEpisode(self, demonstrate = False):
+    def doEpisode(self, demonstrate=False):
         doEpisode( self.exp, demonstrate )
 
     def processLastReward(self):
@@ -77,7 +77,7 @@ class ProcessExperiment:
     def setAgent(self, newAgent):
         self.exp.setAgent( newAgent )
 
-    def doExperiment(self, number = 1, render_steps = False):
+    def doExperiment(self, number=1, render_steps=False):
         for _ in range(0, number):
             self.doSingleExperiment( self.exp, render_steps )
 #             print("Epoch reward:", self.exp.getCumulativeReward())
@@ -92,7 +92,6 @@ class ProcessExperiment:
         self.exp.close()
 
 
-
 class MultiExperiment(object):
 
     def __init__(self, experimentsNumber, createExperimentInstance, doSingleExperiment, copyAgentState):
@@ -105,7 +104,7 @@ class MultiExperiment(object):
             procExp = ProcessExperiment( createExperimentInstance, doSingleExperiment )
             self.experiments.append( procExp )
 
-    def doExperiment(self, number = 1, render_steps = False):
+    def doExperiment(self, number=1, render_steps=False):
         self.bestExperiment = None
         ## execute experiments
         paramsList = []

@@ -47,13 +47,13 @@ class GymEnvironment(Environment):
         self.doCumulative = False
         self.doRender = False
 
-    def setRendering(self, render = True):
+    def setRendering(self, render=True):
         self.doRender = render
 
     def getCumulativeRewardMode(self):
         return self.doCumulative
 
-    def setCumulativeRewardMode(self, cumulativeReward = True):
+    def setCumulativeRewardMode(self, cumulativeReward=True):
         self.doCumulative = cumulativeReward
 
     def setTransformation(self, transformation):
@@ -98,7 +98,6 @@ class GymEnvironment(Environment):
 
     def close(self):
         self.env.close()
-
 
 
 class Transformation:

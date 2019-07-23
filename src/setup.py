@@ -15,6 +15,6 @@ setup(
     author='Arkadiusz Netczuk',
     author_email='dev.arnet@gmail.com',
     keywords="Neural Networks Machine Learning",
-#     url="",
+    # url="",
     packages=find_packages(exclude=['examples', 'testpybraingym', 'runtests.py'])
 )

@@ -31,7 +31,6 @@ from multiprocessing import Value
 from fib import fib_classic
 
 
-
 def processWorker(num, ret):
     ret.value = fib_classic(num)
 
@@ -49,7 +48,7 @@ if __name__ == '__main__':
     proclist = []
     for _ in range(0, procnum):
         ret = Value('i', 0)
-        proc = Process( target = processWorker, args = [fib_arg, ret])
+        proc = Process( target=processWorker, args=[fib_arg, ret] )
         proclist.append( (proc, ret) )
         proc.start()
 
@@ -66,4 +65,4 @@ if __name__ == '__main__':
     refDur = refEndTime - procEndTime
 
     print("Reference duration:", refDur, "sec")
-    print("Processes duration:", procDur, "sec", (procDur/refDur * 100), "%")
+    print("Processes duration:", procDur, "sec", (procDur / refDur * 100), "%")

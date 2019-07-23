@@ -10,7 +10,7 @@ env.reset()
 print("\nStarting")
 
 imax = 1000
-for i in range(1, imax+1):
+for i in range(1, imax + 1):
     env.render()
     # time.sleep(0.01)
     ## action:

@@ -26,7 +26,8 @@
 
 import gym
 
-from pybraingym import GymTask, Transformation
+from pybraingym.environment import Transformation
+from pybraingym.task import GymTask
 from pybraingym.experiment import doEpisode, processLastReward
 
 from pybrain.rl.learners.valuebased import ActionValueTable
@@ -77,6 +78,7 @@ def getBestActions():
         action = choice(action)
         bestActions.append(action)
     return np.array( bestActions ).reshape(4, 4)
+
 
 def getBestReadableActions():
     values = table.params.reshape(16, 4)
@@ -141,7 +143,7 @@ if render_steps:
     pylab.ion()
 
 total_reward = 0
-for i in range(1, imax+1):
+for i in range(1, imax + 1):
     agent.reset()
     doEpisode( experiment, render_steps )
 

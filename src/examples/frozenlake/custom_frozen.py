@@ -7,7 +7,10 @@
 
 import gym
 import numpy as np
-import time, pickle, os
+import time
+import pickle
+import os
+
 
 env = gym.make('FrozenLake-v0')
 
@@ -20,18 +23,21 @@ gamma = 0.96
 
 Q = np.zeros((env.observation_space.n, env.action_space.n))
 
+
 def choose_action(state):
-    action=0
+    action = 0
     if np.random.uniform(0, 1) < epsilon:
         action = env.action_space.sample()
     else:
         action = np.argmax(Q[state, :])
     return action
 
+
 def learn(state, state2, reward, action):
     predict = Q[state, action]
     target = reward + gamma * np.max(Q[state2, :])
     Q[state, action] = Q[state, action] + lr_rate * (target - predict)
+
 
 # Start
 for episode in range(total_episodes):

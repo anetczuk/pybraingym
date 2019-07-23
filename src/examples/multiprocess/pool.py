@@ -30,7 +30,6 @@ from multiprocessing import Pool
 from fib import fib_classic
 
 
-
 def processWorker(num):
     return fib_classic(num)
 
@@ -64,4 +63,4 @@ if __name__ == '__main__':
 
     print("Results:", results)
     print("Reference duration:", refDur, "sec")
-    print("Processes duration:", procDur, "sec", (procDur/refDur * 100), "%")
+    print("Processes duration:", procDur, "sec", (procDur / refDur * 100), "%")

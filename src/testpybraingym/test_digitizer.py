@@ -80,7 +80,6 @@ class DigitizerTest(unittest.TestCase):
         value = digitizer.value( digitizer.states - 1 )
         npt.assert_array_almost_equal(value, 2.0, 2)
 
-
     def test_buildBins_bins_bad(self):
         self.assertRaises( AssertionError, Digitizer.buildBins, -1.0, 1.0, 1 )
 
@@ -102,7 +101,6 @@ class DigitizerTest(unittest.TestCase):
     def test_buildBins_bins04_edges(self):
         bins = Digitizer.buildBins(0.0, 12.0, 4, True)
         npt.assert_equal(bins, [0.0, 6.0, 12.0])
-
 
 
 class ArrayDigitizerTest(unittest.TestCase):

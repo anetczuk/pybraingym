@@ -88,7 +88,7 @@ class MultiprocessingTest(unittest.TestCase):
         calc = Calc()
         calc.num = 11
 
-        proc = Process( target = processWorker, args=(calc,))
+        proc = Process( target=processWorker, args=(calc,))
         proc.start()
         proc.join()
 

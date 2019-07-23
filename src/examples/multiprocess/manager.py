@@ -31,9 +31,9 @@ from multiprocessing.dummy import Pool as ThreadPool
 from fib import Fib
 
 
-
 def objectFactory():
     return Fib()
+
 
 def processWorker( args ):
     fib = args[0]
@@ -48,7 +48,6 @@ if __name__ == '__main__':
 
     procnum = 4
     fib_arg = 37
-
 
     procStartTime = time.time()
 
@@ -87,4 +86,4 @@ if __name__ == '__main__':
 
     print("Results:", results)
     print("Reference duration:", refDur, "sec")
-    print("Processes duration:", procDur, "sec", (procDur/refDur * 100), "%")
+    print("Processes duration:", procDur, "sec", (procDur / refDur * 100), "%")

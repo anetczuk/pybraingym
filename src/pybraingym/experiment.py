@@ -25,7 +25,7 @@
 import time
 
 
-def doEpisode(experiment, demonstrate = False):
+def doEpisode(experiment, demonstrate=False):
     task = experiment.task
     env = task.env
     agent = experiment.agent
@@ -35,8 +35,8 @@ def doEpisode(experiment, demonstrate = False):
 
     agent.newEpisode()
 
-    if demonstrate == False:
-        while(env.done == False):
+    if demonstrate is False:
+        while(env.done is False):
             experiment.doInteractions(1)
         return
 
@@ -64,14 +64,13 @@ def processLastReward(task, agent):
     agent.giveReward(reward)
 
 
-
 class SampleExperiment(object):
 
     def __init__(self, env):
         self.env = env
         self.stepid = 0
 
-    def doInteractions(self, number = 1):
+    def doInteractions(self, number=1):
         for _ in range(number):
             self._oneInteraction()
         return self.stepid

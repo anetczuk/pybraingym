@@ -51,21 +51,21 @@ class Digitizer:
             raise ValueError("invalid state:", state)
         if state == 0:
             return self.bins[ 0 ]
-        if state == self.states -1:
-            return self.bins[ state-1 ]
+        if state == self.states - 1:
+            return self.bins[ state - 1 ]
         ## normal case
-        return (self.bins[ state ] + self.bins[ state-1 ]) / 2
+        return (self.bins[ state ] + self.bins[ state - 1 ]) / 2
 
     @staticmethod
-    def buildBins(fromValue, toValue, numBins, includeEdges = False):
-        if includeEdges == False:
+    def buildBins(fromValue, toValue, numBins, includeEdges=False):
+        if includeEdges is False:
             if numBins < 2:
                 raise AssertionError("invalid parameter: bin - it has to be greater than 1")
             diff = toValue - fromValue
-            step = diff/numBins
+            step = diff / numBins
             bins = []
             currBinValue = fromValue
-            for _ in range(0, numBins-1):
+            for _ in range(0, numBins - 1):
                 currBinValue += step
                 bins.append( currBinValue )
             return bins
@@ -79,7 +79,6 @@ class Digitizer:
                 bins += innerBins
             bins.append( toValue )
             return bins
-
 
 
 class ArrayDigitizer:

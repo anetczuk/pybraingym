@@ -26,7 +26,8 @@
 
 import gym
 
-from pybraingym import GymTask, Transformation
+from pybraingym.environment import Transformation
+from pybraingym.task import GymTask
 from pybraingym.parallelexperiment import SingleExperiment, ProcessExperiment, MultiExperiment
 from pybraingym.digitizer import Digitizer, ArrayDigitizer
 
@@ -46,7 +47,7 @@ import numpy as np
 
 class EnvTransformation(Transformation):
 
-    def __init__(self, observationDigitizer, actionDedigitizer = None):
+    def __init__(self, observationDigitizer, actionDedigitizer=None):
         self.observationDigitizer = observationDigitizer
         self.actionDedigitizer = actionDedigitizer
 
@@ -79,7 +80,6 @@ class EnvTransformation(Transformation):
 
 def createExperimentInstance():
     gymRawEnv = gym.make('MountainCarContinuous-v0')
-
 
     cartPositionGroup = Digitizer.buildBins(-1.2, 0.6, 16)
     cartVelocityGroup = Digitizer.buildBins(-0.07, 0.07, 4)
@@ -117,7 +117,7 @@ def createExperimentInstance():
     return experiment
 
 
-def doSingleExperiment(experiment, render_steps = False):
+def doSingleExperiment(experiment, render_steps=False):
     experiment.doEpisode(render_steps)
     experiment.processLastReward()              ## store final reward for learner
     experiment.learn()
@@ -158,7 +158,7 @@ atexit.register( experiment.close )
 
 procStartTime = time.time()
 
-for i in range(1, rounds_num+1):
+for i in range(1, rounds_num + 1):
     experiment.doExperiment(round_epochs, render_steps)
     reward = experiment.getCumulativeReward()
     print("Round ended: %i/%i best reward: %d" % (i, rounds_num, reward) )
@@ -168,7 +168,7 @@ for i in range(1, rounds_num+1):
         print("Demonstration ended, reward: %d" % ( reward ) )
 
 procEndTime = time.time()
-print("Duration:", (procEndTime-procStartTime), "sec")
+print("Duration:", (procEndTime - procStartTime), "sec")
 
 print("\nDone")
 

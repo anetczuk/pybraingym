@@ -26,7 +26,8 @@
 
 import gym
 
-from pybraingym import GymTask, Transformation
+from pybraingym.environment import Transformation
+from pybraingym.task import GymTask
 from pybraingym.experiment import doEpisode, processLastReward
 from pybraingym.digitizer import Digitizer, ArrayDigitizer
 
@@ -120,7 +121,7 @@ atexit.register( task.close )
 
 total_reward = 0
 
-for i in range(1, imax+1):
+for i in range(1, imax + 1):
     agent.reset()
     doEpisode( experiment, render_steps )
 
