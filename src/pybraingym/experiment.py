@@ -52,9 +52,10 @@ def doEpisode(experiment, demonstrate = False):
 
 
 def processLastReward(task, agent):
-    """ Store last reward when episode is done.
-        Step is important in edge case of Q/SARSA learning
-        when reward is only received in last step.
+    """Store last reward when episode is done.
+
+       Step is important in edge case of Q/SARSA learning
+       when reward is only received in last step.
     """
     observation = task.getObservation()
     agent.integrateObservation(observation)

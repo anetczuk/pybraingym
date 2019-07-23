@@ -27,10 +27,10 @@ from pybraingym.environment import GymEnvironment
 
 
 class GymTask(Task):
-    """ Extends Task class by implementing reward function. """
+    """Extends Task class by implementing reward function."""
 
     def __init__(self, gymEnvironment):
-        """ Class constructor.
+        """Class constructor.
 
         Arguments:
         gymEnvironment -- object compatible with interface of GymgymEnvironment class

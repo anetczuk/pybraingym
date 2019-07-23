@@ -26,7 +26,7 @@ import numpy as np
 
 
 class Digitizer:
-    """ Performs discretization of numbers. """
+    """Performs quantization/discretization of numbers."""
 
     def __init__(self, points):
         self.bins = points
@@ -83,7 +83,7 @@ class Digitizer:
 
 
 class ArrayDigitizer:
-    """ Performs discretization of 1-D arrays. """
+    """Performs quantization/discretization of 1-D arrays."""
 
     def __init__(self, pointsLists):
         self.bins = pointsLists

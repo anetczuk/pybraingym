@@ -104,14 +104,14 @@ class GymEnvironment(Environment):
 class Transformation:
 
     def observation(self, observationValue):
-        """ Transform observation value received from OpenAi Gym. Transformed value is passed to PyBrain. """
+        """Transform observation value received from OpenAi Gym. Transformed value is passed to PyBrain."""
         return observationValue
 
     def action(self, actionValue):
-        """ Transform action value received from PyBrain and pass result to OpenAi Gym. """
+        """Transform action value received from PyBrain and pass result to OpenAi Gym."""
         return actionValue
 
     def reward(self, rewardValue):
-        """ Transform reward value received from OpenAi Gym and pass result to PyBrain. """
+        """Transform reward value received from OpenAi Gym and pass result to PyBrain."""
         return rewardValue
 
