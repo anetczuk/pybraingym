@@ -52,19 +52,18 @@ if __name__ == '__main__':
         proc = Process( target = processWorker, args = [fib_arg, ret])
         proclist.append( (proc, ret) )
         proc.start()
-    
+
     for (proc, val) in proclist:
         proc.join()
-        
+
     procEndTime = time.time()
 
     fib_classic(fib_arg)
 
     refEndTime = time.time()
-    
+
     procDur = procEndTime - procStartTime
     refDur = refEndTime - procEndTime
-    
+
     print("Reference duration:", refDur, "sec")
     print("Processes duration:", procDur, "sec", (procDur/refDur * 100), "%")
-    

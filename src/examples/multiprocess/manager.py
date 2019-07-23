@@ -75,7 +75,7 @@ if __name__ == '__main__':
     fib.calc(fib_arg)
 
     refEndTime = time.time()
-    
+
     procDur = procEndTime - procStartTime
     refDur = refEndTime - procEndTime
 
@@ -85,7 +85,6 @@ if __name__ == '__main__':
         val = fib.result()
         results.append( val )
 
-    print("Results:", results)    
+    print("Results:", results)
     print("Reference duration:", refDur, "sec")
     print("Processes duration:", procDur, "sec", (procDur/refDur * 100), "%")
-    

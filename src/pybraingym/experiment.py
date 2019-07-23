@@ -48,7 +48,7 @@ def doEpisode(experiment, demonstrate = False):
         if env.done:
             break
         experiment.doInteractions(1)
-    agent.learning = prevlearning    
+    agent.learning = prevlearning
 
 
 def processLastReward(task, agent):

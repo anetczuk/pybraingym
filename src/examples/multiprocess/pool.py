@@ -48,7 +48,7 @@ if __name__ == '__main__':
     numbers = []
     for _ in range(0, procnum):
         numbers.append( fib_arg )
-    
+
     results = None
     with Pool( processes=procnum ) as pool:
         results = pool.map(processWorker, numbers)
@@ -58,11 +58,10 @@ if __name__ == '__main__':
     fib_classic(fib_arg)
 
     refEndTime = time.time()
-    
+
     procDur = procEndTime - procStartTime
     refDur = refEndTime - procEndTime
-    
+
     print("Results:", results)
     print("Reference duration:", refDur, "sec")
     print("Processes duration:", procDur, "sec", (procDur/refDur * 100), "%")
-    

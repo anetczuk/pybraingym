@@ -47,14 +47,13 @@ def fib_iter(num):
 
 
 class Fib:
-    
+
     def __init__(self):
         self.res = 0
-    
+
     def result(self):
         return self.res
-    
+
     def calc(self, num):
         self.res = fib_classic( num )
         return self.res
-    

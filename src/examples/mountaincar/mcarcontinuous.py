@@ -53,7 +53,7 @@ class EnvTransformation(Transformation):
     def observation(self, observationValue):
         state = self.observationDigitizer.state( observationValue )
         return [ state ]
-    
+
     def action(self, actionValue):
         ## Gym environment expects one integer value, but PyBrain returns array with single float
         if self.actionDedigitizer is None:
@@ -61,7 +61,7 @@ class EnvTransformation(Transformation):
         state = int( actionValue[0] )
         value = self.actionDedigitizer.value( state )
         return [ value ]
-    
+
     def reward(self, rewardValue):
         return rewardValue
 
@@ -79,29 +79,29 @@ class EnvTransformation(Transformation):
 
 def createExperimentInstance():
     gymRawEnv = gym.make('MountainCarContinuous-v0')
-    
-    
+
+
     cartPositionGroup = Digitizer.buildBins(-1.2, 0.6, 16)
     cartVelocityGroup = Digitizer.buildBins(-0.07, 0.07, 4)
     cartForceGroup = Digitizer.buildBins(-1.0, 1.0, 3, True)
-    
+
 #     print("Cart position bins:", cartPositionGroup)
 #     print("Cart velocity bins:", cartVelocityGroup)
 #     print("Cart force bins:", cartForceGroup)
-    
+
     observationDigitizer = ArrayDigitizer( [ cartPositionGroup, cartVelocityGroup ] )
     actionDedigitizer = Digitizer( cartForceGroup )
     transformation = EnvTransformation(observationDigitizer, actionDedigitizer)
-    
+
     task = GymTask.createTask(gymRawEnv)
     env = task.env
     env.setTransformation( transformation )
     # env.setCumulativeRewardMode()
-          
+
     # create agent with controller and learner - use SARSA(), Q() or QLambda() here
     ## alpha -- learning rate (preference of new information)
     ## gamma -- discount factor (importance of future reward)
-    
+
     # create value table and initialize with ones
     table = ActionValueTable(observationDigitizer.states, actionDedigitizer.states)
     table.initialize(0.0)
@@ -109,9 +109,9 @@ def createExperimentInstance():
     # learner = Q(0.5, 0.99)
     learner = SARSA(0.5, 0.99)
     # learner = QLambda(0.5, 0.99, 0.9)
-    
+
     agent = LearningAgent(table, learner)
-     
+
     experiment = Experiment(task, agent)
     experiment = SingleExperiment( experiment )
     return experiment
@@ -162,11 +162,11 @@ for i in range(1, rounds_num+1):
     experiment.doExperiment(round_epochs, render_steps)
     reward = experiment.getCumulativeReward()
     print("Round ended: %i/%i best reward: %d" % (i, rounds_num, reward) )
-    
+
     if render_demo and i % 10 == 0:
         reward = experiment.demoBest()
         print("Demonstration ended, reward: %d" % ( reward ) )
-        
+
 procEndTime = time.time()
 print("Duration:", (procEndTime-procStartTime), "sec")
 

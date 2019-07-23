@@ -30,7 +30,7 @@ class GymEnvironment(Environment):
 
     def __init__(self, gymRawEnv):
         Environment.__init__(self)
-        
+
         actionSpace = gymRawEnv.action_space
         if type(actionSpace) == Discrete:
             self.indim = 1
@@ -55,7 +55,7 @@ class GymEnvironment(Environment):
 
     def setCumulativeRewardMode(self, cumulativeReward = True):
         self.doCumulative = cumulativeReward
-        
+
     def setTransformation(self, transformation):
         self.transform = transformation
 
@@ -110,7 +110,7 @@ class Transformation:
     def action(self, actionValue):
         """ Transform action value received from PyBrain and pass result to OpenAi Gym. """
         return actionValue
-    
+
     def reward(self, rewardValue):
         """ Transform reward value received from OpenAi Gym and pass result to PyBrain. """
         return rewardValue

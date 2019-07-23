@@ -43,7 +43,7 @@ class Digitizer:
 
     def state(self, data):
         return self.digitize(data)
-    
+
     def value(self, state):
         if state < 0:
             raise ValueError("invalid state:", state)

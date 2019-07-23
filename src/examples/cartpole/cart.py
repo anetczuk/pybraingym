@@ -50,7 +50,7 @@ class CartTransformation(Transformation):
     def observation(self, observationValue):
         state = self.observationDigitizer.state( observationValue )
         return [ state ]
-     
+
     def action(self, actionValue):
         ## Gym environment expects one integer value, but PyBrain returns array with single float
         state = actionValue[0]
@@ -93,12 +93,12 @@ task = GymTask.createTask(gymRawEnv)
 env = task.env
 env.setTransformation( transformation )
 env.setCumulativeRewardMode()
- 
+
 # create value table and initialize with ones
 table = ActionValueTable(observationDigitizer.states, env.numActions)
 table.initialize(0.0)
 # table.initialize( np.random.rand( table.paramdim ) )
- 
+
 # create agent with controller and learner - use SARSA(), Q() or QLambda() here
 ## alpha -- learning rate (preference of new information)
 ## gamma -- discount factor (importance of future reward)
@@ -108,7 +108,7 @@ learner = SARSA(0.5, 0.99)
 # learner = QLambda(0.5, 0.99, 0.9)
 
 agent = LearningAgent(table, learner)
- 
+
 experiment = Experiment(task, agent)
 
 
@@ -128,15 +128,15 @@ total_reward = 0
 for i in range(1, imax+1):
     agent.reset()
     doEpisode( experiment, render_steps )
-    
+
     total_reward += task.getCumulativeReward()
     processLastReward(task, agent)              ## store final reward for learner
-        
+
     agent.learn()
-    
+
     if i % 100 == 0:
         print("Episode ended: %i/%i reward: %d total reward: %d rate: %f" % (i, imax, task.getCumulativeReward(), total_reward, total_reward / i) )
-        
+
     if i % 1000 == 0:
         doEpisode( experiment, True )
 

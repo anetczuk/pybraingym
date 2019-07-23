@@ -42,18 +42,18 @@ class Custom:
 
     def __init__(self):
         self.data = 2
-        
+
     def calc(self, num):
         self.data *= num
 
 
-class Calc:    
-    
+class Calc:
+
     def __init__(self):
         self.num = -1
         self.arr = np.array( [1, 2] )
         self.cust = Custom()
-    
+
     def get(self):
         return self.num
 
@@ -62,7 +62,7 @@ class Calc:
 
     def getCust(self):
         return self.cust.data
-    
+
     def calc(self, num):
         self.num = num * 10
         self.arr = self.arr * num
@@ -76,24 +76,24 @@ def processWorker(calc):
 ## ====================================================
 
 
-class MultiprocessingTest(unittest.TestCase):    
-    
+class MultiprocessingTest(unittest.TestCase):
+
     def test_pool_return(self):
         numbers = [5, 10, 20]
         with ThreadPool( processes=3 ) as pool:
             doubled = pool.map(doubler, numbers)
         self.assertEqual(doubled, [10, 20, 40])
- 
+
     def test_Process_obj(self):
         calc = Calc()
         calc.num = 11
-        
+
         proc = Process( target = processWorker, args=(calc,))
         proc.start()
         proc.join()
 
         self.assertEqual(calc.num, 11)
-  
+
     def test_Pool_obj(self):
         obj = Calc()
         numbers = [3]
@@ -101,19 +101,18 @@ class MultiprocessingTest(unittest.TestCase):
             pool.map(obj.calc, numbers)
 
         self.assertEqual(obj.num, -1)
-        
+
     def test_proxy(self):
         BaseManager.register('CalcClass', Calc)
-        manager = BaseManager() 
-        manager.start()  
+        manager = BaseManager()
+        manager.start()
         inst = manager.CalcClass()
-        
+
         p = Process(target=processWorker, args=[inst])
         p.start()
         p.join()
-        
+
         self.assertEqual(inst.get(), 30)
         npt.assert_equal(inst.getArr(), [3, 6])
         self.assertEqual(inst.getCust(), 6)
-        
-        
+
