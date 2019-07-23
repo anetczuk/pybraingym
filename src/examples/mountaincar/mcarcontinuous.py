@@ -27,7 +27,7 @@
 import gym
 
 from pybraingym import GymTask, Transformation
-from pybraingym.experiment import doEpisode, processLastReward
+from pybraingym.parallelexperiment import SingleExperiment, ProcessExperiment, MultiExperiment
 from pybraingym.digitizer import Digitizer, ArrayDigitizer
 
 from pybrain.rl.learners.valuebased import ActionValueTable
@@ -35,7 +35,9 @@ from pybrain.rl.learners import SARSA, Q, QLambda
 from pybrain.rl.agents import LearningAgent
 from pybrain.rl.experiments import Experiment
 
+import time
 import atexit
+import copy
 import numpy as np
 
 
@@ -74,75 +76,101 @@ class EnvTransformation(Transformation):
 ##        position: (-1.2, 0.6)
 ##        velocity (-0.07, 0.07)
 
-gymRawEnv = gym.make('MountainCarContinuous-v0')
+
+def createExperimentInstance():
+    gymRawEnv = gym.make('MountainCarContinuous-v0')
+    
+    
+    cartPositionGroup = Digitizer.buildBins(-1.2, 0.6, 16)
+    cartVelocityGroup = Digitizer.buildBins(-0.07, 0.07, 4)
+    cartForceGroup = Digitizer.buildBins(-1.0, 1.0, 3, True)
+    
+#     print("Cart position bins:", cartPositionGroup)
+#     print("Cart velocity bins:", cartVelocityGroup)
+#     print("Cart force bins:", cartForceGroup)
+    
+    observationDigitizer = ArrayDigitizer( [ cartPositionGroup, cartVelocityGroup ] )
+    actionDedigitizer = Digitizer( cartForceGroup )
+    transformation = EnvTransformation(observationDigitizer, actionDedigitizer)
+    
+    task = GymTask.createTask(gymRawEnv)
+    env = task.env
+    env.setTransformation( transformation )
+    # env.setCumulativeRewardMode()
+          
+    # create agent with controller and learner - use SARSA(), Q() or QLambda() here
+    ## alpha -- learning rate (preference of new information)
+    ## gamma -- discount factor (importance of future reward)
+    
+    # create value table and initialize with ones
+    table = ActionValueTable(observationDigitizer.states, actionDedigitizer.states)
+    table.initialize(0.0)
+    # table.initialize( np.random.rand( table.paramdim ) )
+    # learner = Q(0.5, 0.99)
+    learner = SARSA(0.5, 0.99)
+    # learner = QLambda(0.5, 0.99, 0.9)
+    
+    agent = LearningAgent(table, learner)
+     
+    experiment = Experiment(task, agent)
+    experiment = SingleExperiment( experiment )
+    return experiment
 
 
-cartPositionGroup = Digitizer.buildBins(-1.2, 0.6, 16)
-cartVelocityGroup = Digitizer.buildBins(-0.07, 0.07, 4)
-cartForceGroup = Digitizer.buildBins(-1.0, 1.0, 3, True)
+def doSingleExperiment(experiment, render_steps = False):
+    experiment.doEpisode(render_steps)
+    experiment.processLastReward()              ## store final reward for learner
+    experiment.learn()
 
-print("Cart position bins:", cartPositionGroup)
-print("Cart velocity bins:", cartVelocityGroup)
-print("Cart force bins:", cartForceGroup)
 
-observationDigitizer = ArrayDigitizer( [ cartPositionGroup, cartVelocityGroup ] )
-actionDedigitizer = Digitizer( cartForceGroup )
-transformation = EnvTransformation(observationDigitizer, actionDedigitizer)
+def copyAgentState(fromAgent, currAgent):
+    newModule = copy.deepcopy(fromAgent.module)
+    learner = SARSA(0.5, 0.99)
+    newAgent = LearningAgent(newModule, learner)
+    return newAgent
 
-task = GymTask.createTask(gymRawEnv)
-env = task.env
-env.setTransformation( transformation )
-# env.setCumulativeRewardMode()
- 
-# create value table and initialize with ones
-table = ActionValueTable(observationDigitizer.states, actionDedigitizer.states)
-table.initialize(0.0)
-# table.initialize( np.random.rand( table.paramdim ) )
- 
-# create agent with controller and learner - use SARSA(), Q() or QLambda() here
-## alpha -- learning rate (preference of new information)
-## gamma -- discount factor (importance of future reward)
 
-# learner = Q(0.5, 0.99)
-learner = SARSA(0.5, 0.99)
-# learner = QLambda(0.5, 0.99, 0.9)
-
-agent = LearningAgent(table, learner)
- 
-experiment = Experiment(task, agent)
+## =============================================================================
 
 
 render_steps = False
-imax = 2000
+render_demo = False
+parallel_exps = 8
+round_epochs = 10
+rounds_num = int(100 / round_epochs)
+
+
+experiment = MultiExperiment( parallel_exps, createExperimentInstance, doSingleExperiment, copyAgentState )
+# experiment = ProcessExperiment( createExperimentInstance, doSingleExperiment )
+
+
+print("")
+print("Parallel experiments:", parallel_exps)
+print("Epochs per round:", round_epochs)
+print("Rounds:", rounds_num)
 
 
 print("\nStarting")
 
 
 ## prevents "ImportError: sys.meta_path is None, Python is likely shutting down"
-atexit.register( task.close )
+atexit.register( experiment.close )
 
+procStartTime = time.time()
 
-total_reward = 0
-
-for i in range(1, imax+1):
-    agent.reset()
-    doEpisode( experiment, render_steps )
+for i in range(1, rounds_num+1):
+    experiment.doExperiment(round_epochs, render_steps)
+    reward = experiment.getCumulativeReward()
+    print("Round ended: %i/%i best reward: %d" % (i, rounds_num, reward) )
     
-    total_reward += task.getCumulativeReward()
-    processLastReward(task, agent)              ## store final reward for learner
+    if render_demo and i % 10 == 0:
+        reward = experiment.demoBest()
+        print("Demonstration ended, reward: %d" % ( reward ) )
         
-    agent.learn()
-    
-    if i % 20 == 0:
-        print("Episode ended: %i/%i reward: %d total reward: %d rate: %f" % (i, imax, task.getCumulativeReward(), total_reward, total_reward / i) )
-        
-    if i % 100 == 0:
-        doEpisode( experiment, True )
-        print("Demonstration ended, reward: %d" % ( task.getCumulativeReward() ) )
-
+procEndTime = time.time()
+print("Duration:", (procEndTime-procStartTime), "sec")
 
 print("\nDone")
 
-task.close()
+experiment.close()
 
