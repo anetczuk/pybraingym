@@ -20,7 +20,7 @@ In directory *src/examples* there are following examples:
 * *frozenlake/frozen.py* -- solution for *FrozenLake-v0* problem using *SARSA* learner.
 * *cartpole/cart.py* -- solution for *CartPole-v1* problem using *SARSA* learner. It 
 demonstrates how to discretize continuous input.
-* *mountaincar* -- solution for discrete and continuous version of *MountainCar* problem 
+* *mountaincar* -- solution for *MountainCar-v0* and *MountainCarContinuous-v0* problem 
 using *SARSA* learner. In addition, continuous version run experiments in parallel manner. 
 * *multiprocess* -- example of use of *multiprocessing* library.
 
