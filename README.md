@@ -40,6 +40,19 @@ Library requires *fixed* version of PyBrain library to work. It can be checked o
 following address: [https://github.com/anetczuk/pybrain](https://github.com/anetczuk/pybrain)
 
 
+### Tools
+
+Unit testsing runner script supports code profiling and code coverage options. Run script 
+with *--help* argument for more info.
+
+
+Directory *tools* contains following scripts:
+* *notrailingwhitespaces.sh* -- removes trailing whitespaces from *py* files
+* *converteol.sh* -- removes ^M character (Windows) from *py* files
+* *codecheck.sh* -- run *pep8* and *flake8* checks against source code
+* *doccheck.sh* -- run *docstyle* against source code
+
+
 ### Known issues
 
 *Q/SARSA* learner does not handle well last reward of episodic environments causing last 
