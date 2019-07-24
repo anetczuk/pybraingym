@@ -31,6 +31,7 @@ class Digitizer:
     def __init__(self, points):
         self.bins = points
         self.states = len(self.bins) + 1
+        self.values = self._gen_values()
 
     def numstates(self):
         return self.states
@@ -49,12 +50,21 @@ class Digitizer:
             raise ValueError("invalid state:", state)
         if state >= self.states:
             raise ValueError("invalid state:", state)
-        if state == 0:
-            return self.bins[ 0 ]
-        if state == self.states - 1:
-            return self.bins[ state - 1 ]
-        ## normal case
-        return (self.bins[ state ] + self.bins[ state - 1 ]) / 2
+        return self.values[ state ]
+
+    def _gen_values(self):
+        ret = []
+        fromVal = self.bins[ 0 ]
+        toVal = self.bins[ self.states - 2 ]
+        ret.append( fromVal )
+        rangeVal = toVal - fromVal
+        valStep = rangeVal / (self.states - 1)
+        nextVal = fromVal
+        for i in range(1, self.states - 1):
+            nextVal += valStep
+            ret.append( nextVal )
+        ret.append( toVal )
+        return ret
 
     @staticmethod
     def buildBins(fromValue, toValue, numBins, includeEdges=False):
@@ -79,6 +89,11 @@ class Digitizer:
                 bins += innerBins
             bins.append( toValue )
             return bins
+
+    @staticmethod
+    def build(fromValue, toValue, numBins, includeEdges=False):
+        bins = Digitizer.buildBins(fromValue, toValue, numBins, includeEdges)
+        return Digitizer( bins )
 
 
 class ArrayDigitizer:
