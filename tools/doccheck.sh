@@ -28,3 +28,4 @@ if [ $exit_code -ne 0 ]; then
 fi
 
 echo "docstyle -- no warnings found"
+echo "0"
