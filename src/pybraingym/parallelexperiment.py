@@ -64,12 +64,10 @@ class SingleExperiment:
 
 class ProcessExperiment:
 
-    def __init__(self, createExperimentInstance, doSingleExperiment):
+    def __init__(self, experiment, doSingleExperiment):
+        self.cumulativeReward = 0
         self.doSingleExperiment = doSingleExperiment
-        self.manager = BaseManager()
-        self.manager.register( 'createExperiment', createExperimentInstance )
-        self.manager.start()
-        self.exp = self.manager.createExperiment()
+        self.exp = experiment
 
     def getAgent(self):
         return self.exp.getAgent()
@@ -78,18 +76,32 @@ class ProcessExperiment:
         self.exp.setAgent( newAgent )
 
     def doExperiment(self, number=1, render_steps=False):
+        self.cumulativeReward = 0
         for _ in range(0, number):
             self.doSingleExperiment( self.exp, render_steps )
-#             print("Epoch reward:", self.exp.getCumulativeReward())
+            reward = self.exp.getCumulativeReward()
+            self.cumulativeReward += reward
+        # print("Process %s epoch reward: %i avg reward: %f" % (self, self.cumulativeReward, self.cumulativeReward / number) )
 
     def demonstrate(self):
         self.doExperiment(1, True)
+        return self.getCumulativeReward()
 
     def getCumulativeReward(self):
-        return self.exp.getCumulativeReward()
+        return self.cumulativeReward
 
     def close(self):
         self.exp.close()
+        
+        
+class ManagedExperiment(ProcessExperiment):
+    
+    def __init__(self, createExperimentInstance, doSingleExperiment):
+        self.manager = BaseManager()
+        self.manager.register( 'createExperiment', createExperimentInstance )
+        self.manager.start()
+        exp = self.manager.createExperiment()
+        ProcessExperiment.__init__(self, exp, doSingleExperiment)
 
 
 class MultiExperiment(object):
@@ -100,13 +112,24 @@ class MultiExperiment(object):
         self.expNum = experimentsNumber
         self.copyAgentState = copyAgentState
         self.experiments = []
-        for _ in range(0, self.expNum):
-            procExp = ProcessExperiment( createExperimentInstance, doSingleExperiment )
+        if self.expNum == 1:
+            exp = createExperimentInstance()
+            procExp = ProcessExperiment( exp, doSingleExperiment )
             self.experiments.append( procExp )
+        else:
+            for _ in range(0, self.expNum):
+                procExp = ManagedExperiment( createExperimentInstance, doSingleExperiment )
+                self.experiments.append( procExp )
 
     def doExperiment(self, number=1, render_steps=False):
         self.bestExperiment = None
         ## execute experiments
+        if self.expNum == 1:
+            exp = self.experiments[0]
+            exp.doExperiment(number, render_steps)
+            self.bestExperiment = 0
+            return
+        
         paramsList = []
         for exp in self.experiments:
             paramsList.append( (exp, number, render_steps) )
@@ -125,11 +148,10 @@ class MultiExperiment(object):
         demonstrate = params[2]
         experiment.doExperiment(number, demonstrate)
 
-    def demoBest(self):
+    def demonstrate(self):
         assert self.bestExperiment >= 0
         bestExp = self.experiments[ self.bestExperiment ]
-        bestExp.demonstrate()
-        return bestExp.getCumulativeReward()
+        return bestExp.demonstrate()
 
     def getCumulativeReward(self):
         assert self.bestExperiment >= 0
@@ -139,6 +161,8 @@ class MultiExperiment(object):
     def getMaxRewardExperimentIndex(self):
         if self.expNum < 1:
             return -1
+        if self.expNum == 1:
+            return 0
         retIndex = 0
         maxRew = self.experiments[0].getCumulativeReward()
         for i in range(1, self.expNum):
