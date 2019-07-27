@@ -38,7 +38,9 @@ def processWorker(num):
 
 
 if __name__ == '__main__':
-    """ Spawns 4 subprocesses and 3 threads """
+    """ Spawns 4 subprocesses and 3 threads.
+        Pool creates 3 threads for its internal use.
+    """
 
     procnum = 4
     fib_arg = 37
