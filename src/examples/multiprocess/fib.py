@@ -62,7 +62,6 @@ class Fib:
         return self.res
 
 
-
 ## ===========================================================================
 
 
@@ -70,8 +69,7 @@ if __name__ == '__main__':
     """ Spawns only single main process, no additional threads """
 
     fib_arg = 37
-    
-    
+
     refStartTime = time.time()
 
     results = fib_classic(fib_arg)

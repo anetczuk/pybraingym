@@ -47,13 +47,13 @@ def processWorker( args ):
 
 
 if __name__ == '__main__':
-    """ Spawns 4 subprocesses and 1 subthread per process. When calculating then 
+    """ Spawns 4 subprocesses and 1 subthread per process. When calculating then
         additional subthread per process and 7 threads are created.
-        
+
         For every manager:
         - start() spawns new process and one thread
         - method call on contained object (on proxy) spawns new thread in manager process
-        
+
         multiprocessing Pool:
         - creates 3 threads for it's internal use
         - creates given number of worker threads or processes
@@ -77,20 +77,17 @@ if __name__ == '__main__':
         calc = man.Fib()
         calcList.append( (calc, fib_arg) )
 
-    if 'ThreadPoolExecutor' in dir():
-        ## does not spawn inner threads
-        with ThreadPoolExecutor( max_workers=procnum ) as executor:
-            executor.map( processWorker, calcList )
+    ## does not spawn inner threads
+    with ThreadPoolExecutor( max_workers=procnum ) as executor:
+        executor.map( processWorker, calcList )
 
-    if 'MultiprocessingThreadPool' in dir():
-        ## spawns 3 inner threads
-        with MultiprocessingThreadPool( processes=procnum ) as pool:
-            pool.map( processWorker, calcList )
-
-    if 'MultiprocessingProcessPool' in dir():
-        ## spawns 3 inner threads
-        with MultiprocessingProcessPool( processes=procnum ) as pool:
-            pool.map( processWorker, calcList )
+#     ## spawns 3 inner threads
+#     with MultiprocessingThreadPool( processes=procnum ) as pool:
+#         pool.map( processWorker, calcList )
+#
+#     ## spawns 3 inner threads
+#     with MultiprocessingProcessPool( processes=procnum ) as pool:
+#         pool.map( processWorker, calcList )
 
     procEndTime = time.time()
 

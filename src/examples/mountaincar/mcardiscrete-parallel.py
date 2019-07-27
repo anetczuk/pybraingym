@@ -83,7 +83,7 @@ def createAgent(module):
     # create agent with controller and learner - use SARSA(), Q() or QLambda() here
     ## alpha -- learning rate (preference of new information)
     ## gamma -- discount factor (importance of future reward)
-    
+
     # learner = Q(0.5, 0.99)
     learner = SARSA(0.5, 0.99)
     # learner = QLambda(0.5, 0.99, 0.9)
@@ -97,24 +97,24 @@ def createExperimentInstance():
 
     cartPositionGroup = Digitizer.buildBins(-1.2, 0.6, 16)
     cartVelocityGroup = Digitizer.buildBins(-0.07, 0.07, 4)
-    
+
 #     print("Cart position bins:", cartPositionGroup)
 #     print("Cart velocity bins:", cartVelocityGroup)
-    
+
     observationDigitizer = ArrayDigitizer( [ cartPositionGroup, cartVelocityGroup ] )
     transformation = EnvTransformation(observationDigitizer)
-    
+
     task = GymTask.createTask(gymRawEnv)
     env = task.env
     env.setTransformation( transformation )
     # env.setCumulativeRewardMode()
-    
+
     # create value table and initialize with ones
     table = ActionValueTable(observationDigitizer.states, env.numActions)
     table.initialize(0.0)
-    # table.initialize( np.random.rand( table.paramdim ) )    
+    # table.initialize( np.random.rand( table.paramdim ) )
     agent = createAgent( table )
-    
+
     experiment = Experiment(task, agent)
     experiment = SingleExperiment( experiment )
     return experiment

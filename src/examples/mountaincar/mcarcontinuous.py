@@ -85,7 +85,7 @@ def createAgent(module):
     # create agent with controller and learner - use SARSA(), Q() or QLambda() here
     ## alpha -- learning rate (preference of new information)
     ## gamma -- discount factor (importance of future reward)
-    
+
     # learner = Q(0.5, 0.99)
     learner = SARSA(0.5, 0.99)
     # learner = QLambda(0.5, 0.99, 0.9)

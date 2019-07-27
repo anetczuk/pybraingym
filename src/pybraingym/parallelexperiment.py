@@ -23,8 +23,8 @@
 
 
 from pybraingym.experiment import doEpisode, processLastReward
-from multiprocessing.dummy import Pool as ThreadPool
-# from concurrent.futures import ThreadPoolExecutor as ThreadPool
+# from multiprocessing.dummy import Pool as ThreadPool
+from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.managers import BaseManager
 
 
@@ -92,10 +92,10 @@ class ProcessExperiment:
 
     def close(self):
         self.exp.close()
-        
-        
+
+
 class ManagedExperiment(ProcessExperiment):
-    
+
     def __init__(self, createExperimentInstance, doSingleExperiment):
         self.manager = BaseManager()
         self.manager.register( 'createExperiment', createExperimentInstance )
@@ -129,12 +129,11 @@ class MultiExperiment(object):
             exp.doExperiment(number, render_steps)
             self.bestExperiment = 0
             return
-        
+
         paramsList = []
         for exp in self.experiments:
             paramsList.append( (exp, number, render_steps) )
-        with ThreadPool( processes=self.expNum ) as pool:
-#         with ThreadPool( max_workers=self.expNum ) as pool:
+        with ThreadPoolExecutor( max_workers=self.expNum ) as pool:
             pool.map(MultiExperiment.processExperiment, paramsList)
 
         ## calculate best actor

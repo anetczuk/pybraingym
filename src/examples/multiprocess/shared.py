@@ -26,7 +26,7 @@
 
 import time
 
-from multiprocessing import Pool, Process
+from multiprocessing import Process
 from multiprocessing.sharedctypes import Value
 from fib import fib_classic, Fib
 import ctypes
@@ -43,17 +43,17 @@ class ComplexData(ctypes.Structure):
 
 
 class ComplexType:
-    
+
     def __init__(self, shared=None):
-        if shared != None:
+        if shared is not None:
             self.shared = shared
         else:
             self.shared = Value( ComplexData )
         self.worker = Fib()
-    
+
     def calc(self, number):
         self.shared.fib = self.worker.calc(number)
-        
+
     def result(self):
         return self.shared.fib
 
@@ -75,12 +75,11 @@ if __name__ == '__main__':
         proc = Process( target=processWorker, args=[val.shared, fib_arg] )
         proclist.append( (proc, val) )
         proc.start()
- 
+
     results = []
     for (proc, val) in proclist:
         proc.join()
         results.append( val.result() )
-
 
     procEndTime = time.time()
 
