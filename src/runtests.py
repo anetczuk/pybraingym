@@ -121,6 +121,8 @@ if __name__ == '__main__':
                 profiler.dump_stats( profiler_outfile )
 
             if profiler_outfile is not None:
+                ## convert profiler output to kcachegrind format
+                ## in case of missing program install it by: "pip install --user pyprof2calltree"
                 ##pyprof2calltree -i $PROF_FILE -k
                 print( "Launching: pyprof2calltree -i {} -k".format(profiler_outfile) )
                 subprocess.call(["pyprof2calltree", "-i", profiler_outfile, "-k"])

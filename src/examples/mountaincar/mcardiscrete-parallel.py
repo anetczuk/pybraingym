@@ -28,7 +28,7 @@ import gym
 
 from pybraingym.environment import Transformation
 from pybraingym.task import GymTask
-from pybraingym.parallelexperiment import SingleExperiment, MultiExperiment
+from pybraingym.parallelexperiment import SingleExperiment, ProcessExperiment, MultiExperiment
 from pybraingym.digitizer import Digitizer, ArrayDigitizer
 
 from pybrain.rl.learners.valuebased import ActionValueTable
@@ -38,8 +38,8 @@ from pybrain.rl.experiments import Experiment
 
 import time
 import atexit
-import copy
 import numpy as np
+import copy
 
 
 ## =============================================================================
@@ -47,9 +47,8 @@ import numpy as np
 
 class EnvTransformation(Transformation):
 
-    def __init__(self, observationDigitizer, actionDedigitizer=None):
+    def __init__(self, observationDigitizer):
         self.observationDigitizer = observationDigitizer
-        self.actionDedigitizer = actionDedigitizer
 
     def observation(self, observationValue):
         state = self.observationDigitizer.state( observationValue )
@@ -57,11 +56,8 @@ class EnvTransformation(Transformation):
 
     def action(self, actionValue):
         ## Gym environment expects one integer value, but PyBrain returns array with single float
-        if self.actionDedigitizer is None:
-            return actionValue
-        state = int( actionValue[0] )
-        value = self.actionDedigitizer.value( state )
-        return [ value ]
+        state = actionValue[0]
+        return int(state)
 
     def reward(self, rewardValue):
         return rewardValue
@@ -71,14 +67,16 @@ class EnvTransformation(Transformation):
 
 
 ## Gym expected action:
-##   [-1.0 .. 1.0] -- single floating point representing engine force
+##   0 -- left
+##   1 -- neutral
+##   2 -- right
 
 ## Gym observation: [position, velocity]
 ##        position: (-1.2, 0.6)
 ##        velocity (-0.07, 0.07)
 
 ## Gym reward:
-##        reward is 100 for reaching the target of the hill on the right hand side, minus the squared sum of actions from start to goal.
+##        -1 for each time step, until the goal position of 0.5 is reached. As with MountainCarContinuous v0, there is no penalty for climbing the left hill, which upon reached acts as a wall.
 
 
 def createAgent(module):
@@ -95,34 +93,28 @@ def createAgent(module):
 
 
 def createExperimentInstance():
-    gymRawEnv = gym.make('MountainCarContinuous-v0')
+    gymRawEnv = gym.make('MountainCar-v0')
 
     cartPositionGroup = Digitizer.buildBins(-1.2, 0.6, 16)
     cartVelocityGroup = Digitizer.buildBins(-0.07, 0.07, 4)
-    actionDedigitizer = Digitizer.build(-1.0, 1.0, 5, True)
-
+    
 #     print("Cart position bins:", cartPositionGroup)
 #     print("Cart velocity bins:", cartVelocityGroup)
-#     print("Cart force bins:", actionDedigitizer.bins, actionDedigitizer.possibleValues())
-
+    
     observationDigitizer = ArrayDigitizer( [ cartPositionGroup, cartVelocityGroup ] )
-    transformation = EnvTransformation(observationDigitizer, actionDedigitizer)
-
+    transformation = EnvTransformation(observationDigitizer)
+    
     task = GymTask.createTask(gymRawEnv)
     env = task.env
     env.setTransformation( transformation )
     # env.setCumulativeRewardMode()
-
-    # create agent with controller and learner - use SARSA(), Q() or QLambda() here
-    ## alpha -- learning rate (preference of new information)
-    ## gamma -- discount factor (importance of future reward)
-
+    
     # create value table and initialize with ones
-    table = ActionValueTable(observationDigitizer.states, actionDedigitizer.states)
+    table = ActionValueTable(observationDigitizer.states, env.numActions)
     table.initialize(0.0)
-    # table.initialize( np.random.rand( table.paramdim ) )
+    # table.initialize( np.random.rand( table.paramdim ) )    
     agent = createAgent( table )
-
+    
     experiment = Experiment(task, agent)
     experiment = SingleExperiment( experiment )
     return experiment
@@ -146,16 +138,25 @@ def copyAgentState(fromAgent, currAgent):
 ## =============================================================================
 
 
+# render_steps = False
+# imax = 18000
+
+# render_steps = False
+# render_demo = False
+# parallel_exps = 4
+# round_epochs = 20
+# rounds_num = int(1000 / round_epochs)
+
 render_steps = False
 render_demo = False
-# render_demo = False
-parallel_exps = 8
-round_epochs = 10
-rounds_num = int(500 / round_epochs)
+parallel_exps = 2
+round_epochs = 100
+# rounds_num = int(1000 / round_epochs)
+rounds_num = 1
 
 
 experiment = MultiExperiment( parallel_exps, createExperimentInstance, doSingleExperiment, copyAgentState )
-# experiment = ProcessExperiment( createExperimentInstance, doSingleExperiment )
+# experiment = ProcessExperiment( createExperimentInstance(), doSingleExperiment )
 
 
 ## prevents "ImportError: sys.meta_path is None, Python is likely shutting down"
@@ -174,14 +175,14 @@ procStartTime = time.time()
 for i in range(1, rounds_num + 1):
     experiment.doExperiment(round_epochs, render_steps)
     reward = experiment.getCumulativeReward()
-    print("Round ended: %i/%i best reward: %d" % (i, rounds_num, reward) )
+    print("Round ended: %i/%i best reward: %d per epoch: %f" % (i, rounds_num, reward, reward / round_epochs) )
 
     if render_demo and i % 10 == 0:
         reward = experiment.demoBest()
         print("Demonstration ended, reward: %d" % ( reward ) )
 
-reward = experiment.demonstrate()
-print("Final demonstration, reward: %d" % ( reward ) )
+# reward = experiment.demonstrate()
+# print("Final demonstration, reward: %d" % ( reward ) )
 
 procEndTime = time.time()
 print("Duration:", (procEndTime - procStartTime), "sec")
