@@ -39,6 +39,7 @@ def processWorker(num, ret):
 
 
 if __name__ == '__main__':
+    """ Spawns 4 subprocesses, no additional threads """
 
     procnum = 4
     fib_arg = 37

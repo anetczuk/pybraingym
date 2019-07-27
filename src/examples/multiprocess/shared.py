@@ -26,65 +26,70 @@
 
 import time
 
-from multiprocessing.managers import BaseManager
-from multiprocessing.dummy import Pool as ThreadPool
-from fib import Fib
+from multiprocessing import Pool, Process
+from multiprocessing.sharedctypes import Value
+from fib import fib_classic, Fib
+import ctypes
 
 
-def objectFactory():
-    return Fib()
+def processWorker(obj, num):
+    objWorker = ComplexType(obj)
+    objWorker.calc(num)
 
 
-def processWorker( args ):
-    fib = args[0]
-    num = args[1]
-    return fib.calc(num)
+class ComplexData(ctypes.Structure):
+    ## here goes definition of fields to serialize -- names and types of data
+    _fields_ = [('fib', ctypes.c_int64)]
+
+
+class ComplexType:
+    
+    def __init__(self, shared=None):
+        if shared != None:
+            self.shared = shared
+        else:
+            self.shared = Value( ComplexData )
+        self.worker = Fib()
+    
+    def calc(self, number):
+        self.shared.fib = self.worker.calc(number)
+        
+    def result(self):
+        return self.shared.fib
 
 
 ## ===========================================================================
 
 
 if __name__ == '__main__':
-    """ Spawns 4 subprocesses and 1 subthread per process. When calculating then 
-        additional subthread per process and 7 threads are created """
+    """ Spawns 4 subprocesses, no additional threads """
 
     procnum = 4
     fib_arg = 37
 
     procStartTime = time.time()
 
-    ## spawn managers -- one process per one manager
-    managers = []
+    proclist = []
     for _ in range(0, procnum):
-        manager = BaseManager()
-        managers.append( manager )
-        manager.register('Fib', objectFactory)
-        manager.start()
+        val = ComplexType()
+        proc = Process( target=processWorker, args=[val.shared, fib_arg] )
+        proclist.append( (proc, val) )
+        proc.start()
+ 
+    results = []
+    for (proc, val) in proclist:
+        proc.join()
+        results.append( val.result() )
 
-    calcList = []
-    for man in managers:
-        calc = man.Fib()
-        calcList.append( (calc, fib_arg) )
-
-    ## spawn threads that wait for calculation results from managers
-    with ThreadPool( processes=procnum ) as pool:
-        pool.map(processWorker, calcList)
 
     procEndTime = time.time()
 
-    fib = Fib()
-    fib.calc(fib_arg)
+    fib_classic(fib_arg)
 
     refEndTime = time.time()
 
     procDur = procEndTime - procStartTime
     refDur = refEndTime - procEndTime
-
-    results = []
-    for calcPar in calcList:
-        fib = calcPar[0]
-        val = fib.result()
-        results.append( val )
 
     print("Results:", results)
     print("Reference duration:", refDur, "sec")

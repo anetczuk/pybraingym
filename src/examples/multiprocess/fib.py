@@ -24,6 +24,9 @@
 #
 
 
+import time
+
+
 def fib_classic(num):
     if num < 1:
         return 0
@@ -57,3 +60,26 @@ class Fib:
     def calc(self, num):
         self.res = fib_classic( num )
         return self.res
+
+
+
+## ===========================================================================
+
+
+if __name__ == '__main__':
+    """ Spawns only single main process, no additional threads """
+
+    fib_arg = 37
+    
+    
+    refStartTime = time.time()
+
+    results = fib_classic(fib_arg)
+
+    refEndTime = time.time()
+
+    refDur = refEndTime - refStartTime
+
+    print("Result:", results)
+    print("Reference duration:", refDur, "sec")
+
