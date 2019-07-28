@@ -61,7 +61,7 @@ class AbstractExperiment(metaclass=abc.ABCMeta):
 
 
 class ProcessExperiment(AbstractExperiment):
-    """Wrapper for Experiment class."""
+    """Wrapper for PyBrain's Experiment class."""
 
     def __init__(self, experiment, doSingleExperiment):
         self.exp = experiment
@@ -76,8 +76,8 @@ class ProcessExperiment(AbstractExperiment):
 
     def doExperiment( self, number=1, render_steps=False ):
         self.cumulativeReward = 0
-        for _ in range(0, number):
-            self.handleExperiment( self, render_steps )
+        for i in range(1, number+1):
+            self.handleExperiment( self, i, render_steps )
             task = self.exp.task
             self.cumulativeReward += task.getCumulativeReward()
 

@@ -96,7 +96,7 @@ def createExperimentInstance():
     gymRawEnv = gym.make('MountainCar-v0')
 
     cartPositionGroup = Digitizer.buildBins(-1.2, 0.6, 16)
-    cartVelocityGroup = Digitizer.buildBins(-0.07, 0.07, 4)
+    cartVelocityGroup = Digitizer.buildBins(-0.07, 0.07, 16)
 
 #     print("Cart position bins:", cartPositionGroup)
 #     print("Cart velocity bins:", cartVelocityGroup)
@@ -123,11 +123,9 @@ def createExperimentInstance():
 class ExperimentIteration:
 
     def __init__(self):
-        self.iteration = 0
+        pass
 
-    def __call__(self, experiment, render_steps=False):
-        self.iteration += 1
-
+    def __call__(self, experiment, iteration, render_steps=False):
         agent = experiment.getAgent()
         agent.reset()
         experiment.doEpisode(render_steps)
@@ -135,10 +133,10 @@ class ExperimentIteration:
             experiment.processLastReward()              ## store final reward for learner
             experiment.learn()
 
-        if self.iteration % 100 == 0:
+        if iteration % 100 == 0:
             reward = experiment.getReward()
-            totalReward = experiment.getCumulativeReward()
-            print("Episode ended: %i reward: %d total reward: %d rate: %f" % (self.iteration, reward, totalReward, totalReward / self.iteration) )
+            totalReward = experiment.getCumulativeReward() + reward
+            print("Episode ended: %i reward: %d total reward: %d rate: %f" % (iteration, reward, totalReward, totalReward / iteration) )
 
 
 def copyAgentState(fromAgent, currAgent):
@@ -162,8 +160,9 @@ def copyAgentState(fromAgent, currAgent):
 render_steps = False
 render_demo = False
 parallel_exps = 8
-round_epochs = 1000
+round_epochs = 3000
 # rounds_num = int(1000 / round_epochs)
+# rounds_num = 10
 rounds_num = 1
 
 

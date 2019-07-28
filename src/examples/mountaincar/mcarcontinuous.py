@@ -128,7 +128,7 @@ def createExperimentInstance():
     return experiment
 
 
-def doSingleExperiment(experiment, render_steps=False):
+def doSingleExperiment(experiment, iteration, render_steps=False):
     agent = experiment.getAgent()
     agent.reset()
     experiment.doEpisode(render_steps)
@@ -155,7 +155,7 @@ rounds_num = int(500 / round_epochs)
 
 
 experiment = MultiExperiment( parallel_exps, createExperimentInstance, copyAgentState )
-# experiment = ProcessExperiment( createExperimentInstance )
+# experiment = createExperimentInstance()
 
 
 ## prevents "ImportError: sys.meta_path is None, Python is likely shutting down"
