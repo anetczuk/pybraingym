@@ -44,6 +44,10 @@ class AbstractExperiment(metaclass=abc.ABCMeta):
         raise NotImplementedError('You need to define this method in derived class!')
 
     @abc.abstractmethod
+    def getReward(self):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+    @abc.abstractmethod
     def getCumulativeReward(self):
         raise NotImplementedError('You need to define this method in derived class!')
 
@@ -77,11 +81,15 @@ class ProcessExperiment(AbstractExperiment):
             task = self.exp.task
             self.cumulativeReward += task.getCumulativeReward()
 
+    def getReward(self):
+        task = self.exp.task
+        return task.getCumulativeReward()
+
     def getCumulativeReward(self):
         return self.cumulativeReward
 
     def demonstrate(self):
-        self.doExperiment(True)
+        self.doExperiment(1, True)
         return self.getCumulativeReward()
 
     def close(self):
@@ -121,6 +129,9 @@ class ManagedExperiment(AbstractExperiment):
 
     def doExperiment(self, number=1, render_steps=False):
         self.exp.doExperiment( number, render_steps )
+
+    def getReward(self):
+        return self.exp.getReward()
 
     def getCumulativeReward(self):
         return self.exp.getCumulativeReward()
