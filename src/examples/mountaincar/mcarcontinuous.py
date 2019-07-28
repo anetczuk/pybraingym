@@ -180,12 +180,11 @@ for i in range(1, rounds_num + 1):
         reward = experiment.demoBest()
         print("Demonstration ended, reward: %d" % ( reward ) )
 
-reward = experiment.demonstrate()
-print("Final demonstration, reward: %d" % ( reward ) )
-
 procEndTime = time.time()
 print("Duration:", (procEndTime - procStartTime), "sec")
 
+reward = experiment.demonstrate()
+print("\nFinal demonstration, reward: %d" % ( reward ) )
 print("\nDone")
 
 experiment.close()

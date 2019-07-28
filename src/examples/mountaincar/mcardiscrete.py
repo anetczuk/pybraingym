@@ -140,12 +140,11 @@ for i in range(1, imax + 1):
         doEpisode( experiment, True )
 #         print("vals:", table.params.reshape(16 * 4, 3))
 
-
 procEndTime = time.time()
-
-print("")
 print("Duration:", (procEndTime - procStartTime), "sec")
-print("Done")
+
+reward = experiment.demonstrate()
+print("\nFinal demonstration, reward: %d" % ( reward ) )
+print("\nDone")
 
 task.close()
-

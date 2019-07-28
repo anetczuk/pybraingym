@@ -136,8 +136,9 @@ class ExperimentIteration:
             experiment.learn()
 
         if self.iteration % 100 == 0:
+            reward = experiment.getReward()
             totalReward = experiment.getCumulativeReward()
-            print("Episode ended: %i total reward: %d rate: %f" % (self.iteration, totalReward, totalReward / self.iteration) )
+            print("Episode ended: %i reward: %d total reward: %d rate: %f" % (self.iteration, reward, totalReward, totalReward / self.iteration) )
 
 
 def copyAgentState(fromAgent, currAgent):
@@ -160,7 +161,7 @@ def copyAgentState(fromAgent, currAgent):
 
 render_steps = False
 render_demo = False
-parallel_exps = 1
+parallel_exps = 8
 round_epochs = 1000
 # rounds_num = int(1000 / round_epochs)
 rounds_num = 1
@@ -196,9 +197,10 @@ for i in range(1, rounds_num + 1):
 # print("Final demonstration, reward: %d" % ( reward ) )
 
 procEndTime = time.time()
-
-print("")
 print("Duration:", (procEndTime - procStartTime), "sec")
-print("Done")
+
+reward = experiment.demonstrate()
+print("\nFinal demonstration, reward: %d" % ( reward ) )
+print("\nDone")
 
 experiment.close()
