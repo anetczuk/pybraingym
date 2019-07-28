@@ -23,21 +23,71 @@
 
 
 from pybraingym.experiment import doEpisode, processLastReward
-# from multiprocessing.dummy import Pool as ThreadPool
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.managers import BaseManager
 
+import abc
 
-class SingleExperiment:
 
-    def __init__(self, experiment):
+class AbstractExperiment(metaclass=abc.ABCMeta):
+
+    @abc.abstractmethod
+    def getAgent(self):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+    @abc.abstractmethod
+    def setAgent(self, newAgent):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+    @abc.abstractmethod
+    def doExperiment(self, number=1, render_steps=False):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+    @abc.abstractmethod
+    def getCumulativeReward(self):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+    @abc.abstractmethod
+    def demonstrate(self):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+    @abc.abstractmethod
+    def close(self):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+
+class ProcessExperiment(AbstractExperiment):
+    """Wrapper for Experiment class."""
+
+    def __init__(self, experiment, doSingleExperiment):
         self.exp = experiment
+        self.cumulativeReward = 0
+        self.handleExperiment = doSingleExperiment
 
     def getAgent(self):
         return self.exp.agent
 
     def setAgent(self, newAgent):
         self.exp.agent = newAgent
+
+    def doExperiment( self, number=1, render_steps=False ):
+        self.cumulativeReward = 0
+        for _ in range(0, number):
+            self.handleExperiment( self, render_steps )
+            task = self.exp.task
+            self.cumulativeReward += task.getCumulativeReward()
+
+    def getCumulativeReward(self):
+        return self.cumulativeReward
+
+    def demonstrate(self):
+        self.doExperiment(True)
+        return self.getCumulativeReward()
+
+    def close(self):
+        self.exp.task.close()
+
+    ## =================================================
 
     def doEpisode(self, demonstrate=False):
         doEpisode( self.exp, demonstrate )
@@ -51,23 +101,17 @@ class SingleExperiment:
         agent = self.exp.agent
         agent.learn()
 
-    def getCumulativeReward(self):
-        task = self.exp.task
-        return task.getCumulativeReward()
-
-    def close(self):
-        self.exp.task.close()
-
 
 ## ===========================================================================
 
 
-class ProcessExperiment:
+class ManagedExperiment(AbstractExperiment):
 
-    def __init__(self, experiment, doSingleExperiment):
-        self.cumulativeReward = 0
-        self.doSingleExperiment = doSingleExperiment
-        self.exp = experiment
+    def __init__(self, createExperimentInstance):
+        self.manager = BaseManager()
+        self.manager.register( 'createExperiment', createExperimentInstance )
+        self.manager.start()
+        self.exp = self.manager.createExperiment()
 
     def getAgent(self):
         return self.exp.getAgent()
@@ -76,37 +120,21 @@ class ProcessExperiment:
         self.exp.setAgent( newAgent )
 
     def doExperiment(self, number=1, render_steps=False):
-        self.cumulativeReward = 0
-        for _ in range(0, number):
-            self.doSingleExperiment( self.exp, render_steps )
-            reward = self.exp.getCumulativeReward()
-            self.cumulativeReward += reward
-        # print("Process %s epoch reward: %i avg reward: %f" % (self, self.cumulativeReward, self.cumulativeReward / number) )
-
-    def demonstrate(self):
-        self.doExperiment(1, True)
-        return self.getCumulativeReward()
+        self.exp.doExperiment( number, render_steps )
 
     def getCumulativeReward(self):
-        return self.cumulativeReward
+        return self.exp.getCumulativeReward()
+
+    def demonstrate(self):
+        return self.exp.demonstrate()
 
     def close(self):
         self.exp.close()
 
 
-class ManagedExperiment(ProcessExperiment):
-
-    def __init__(self, createExperimentInstance, doSingleExperiment):
-        self.manager = BaseManager()
-        self.manager.register( 'createExperiment', createExperimentInstance )
-        self.manager.start()
-        exp = self.manager.createExperiment()
-        ProcessExperiment.__init__(self, exp, doSingleExperiment)
-
-
 class MultiExperiment(object):
 
-    def __init__(self, experimentsNumber, createExperimentInstance, doSingleExperiment, copyAgentState):
+    def __init__(self, experimentsNumber, createExperimentInstance, copyAgentState):
         self.stepid = 0
         self.bestExperiment = None
         self.expNum = experimentsNumber
@@ -114,11 +142,10 @@ class MultiExperiment(object):
         self.experiments = []
         if self.expNum == 1:
             exp = createExperimentInstance()
-            procExp = ProcessExperiment( exp, doSingleExperiment )
-            self.experiments.append( procExp )
+            self.experiments.append( exp )
         else:
             for _ in range(0, self.expNum):
-                procExp = ManagedExperiment( createExperimentInstance, doSingleExperiment )
+                procExp = ManagedExperiment( createExperimentInstance )
                 self.experiments.append( procExp )
 
     def doExperiment(self, number=1, render_steps=False):
@@ -147,11 +174,6 @@ class MultiExperiment(object):
         demonstrate = params[2]
         experiment.doExperiment(number, demonstrate)
 
-    def demonstrate(self):
-        assert self.bestExperiment >= 0
-        bestExp = self.experiments[ self.bestExperiment ]
-        return bestExp.demonstrate()
-
     def getCumulativeReward(self):
         assert self.bestExperiment >= 0
         exp = self.experiments[ self.bestExperiment ]
@@ -171,6 +193,11 @@ class MultiExperiment(object):
                 maxRew = rew
                 retIndex = i
         return retIndex
+
+    def demonstrate(self):
+        assert self.bestExperiment >= 0
+        bestExp = self.experiments[ self.bestExperiment ]
+        return bestExp.demonstrate()
 
     def close(self):
         for exp in self.experiments:

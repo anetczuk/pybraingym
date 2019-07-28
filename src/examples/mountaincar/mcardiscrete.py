@@ -36,6 +36,7 @@ from pybrain.rl.learners import SARSA, Q, QLambda
 from pybrain.rl.agents import LearningAgent
 from pybrain.rl.experiments import Experiment
 
+import time
 import atexit
 import numpy as np
 
@@ -107,19 +108,21 @@ agent = LearningAgent(table, learner)
 
 experiment = Experiment(task, agent)
 
+## prevents "ImportError: sys.meta_path is None, Python is likely shutting down"
+atexit.register( task.close )
 
+
+render_demo = False
 render_steps = False
-imax = 18000
+imax = 1000
 
 
 print("\nStarting")
 
 
-## prevents "ImportError: sys.meta_path is None, Python is likely shutting down"
-atexit.register( task.close )
-
-
 total_reward = 0
+
+procStartTime = time.time()
 
 for i in range(1, imax + 1):
     agent.reset()
@@ -133,12 +136,16 @@ for i in range(1, imax + 1):
     if i % 100 == 0:
         print("Episode ended: %i/%i reward: %d total reward: %d rate: %f" % (i, imax, task.getCumulativeReward(), total_reward, total_reward / i) )
 
-    if i % 1000 == 0:
+    if render_demo and i % 1000 == 0:
         doEpisode( experiment, True )
 #         print("vals:", table.params.reshape(16 * 4, 3))
 
 
-print("\nDone")
+procEndTime = time.time()
+
+print("")
+print("Duration:", (procEndTime - procStartTime), "sec")
+print("Done")
 
 task.close()
 

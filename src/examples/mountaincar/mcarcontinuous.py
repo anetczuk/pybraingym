@@ -28,7 +28,7 @@ import gym
 
 from pybraingym.environment import Transformation
 from pybraingym.task import GymTask
-from pybraingym.parallelexperiment import SingleExperiment, MultiExperiment
+from pybraingym.parallelexperiment import ProcessExperiment, MultiExperiment
 from pybraingym.digitizer import Digitizer, ArrayDigitizer
 
 from pybrain.rl.learners.valuebased import ActionValueTable
@@ -124,7 +124,7 @@ def createExperimentInstance():
     agent = createAgent( table )
 
     experiment = Experiment(task, agent)
-    experiment = SingleExperiment( experiment )
+    experiment = ProcessExperiment( experiment, doSingleExperiment )
     return experiment
 
 
@@ -154,8 +154,8 @@ round_epochs = 10
 rounds_num = int(500 / round_epochs)
 
 
-experiment = MultiExperiment( parallel_exps, createExperimentInstance, doSingleExperiment, copyAgentState )
-# experiment = ProcessExperiment( createExperimentInstance, doSingleExperiment )
+experiment = MultiExperiment( parallel_exps, createExperimentInstance, copyAgentState )
+# experiment = ProcessExperiment( createExperimentInstance )
 
 
 ## prevents "ImportError: sys.meta_path is None, Python is likely shutting down"

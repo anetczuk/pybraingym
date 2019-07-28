@@ -28,7 +28,7 @@ import gym
 
 from pybraingym.environment import Transformation
 from pybraingym.task import GymTask
-from pybraingym.parallelexperiment import SingleExperiment, ProcessExperiment, MultiExperiment
+from pybraingym.parallelexperiment import ProcessExperiment, MultiExperiment
 from pybraingym.digitizer import Digitizer, ArrayDigitizer
 
 from pybrain.rl.learners.valuebased import ActionValueTable
@@ -116,17 +116,28 @@ def createExperimentInstance():
     agent = createAgent( table )
 
     experiment = Experiment(task, agent)
-    experiment = SingleExperiment( experiment )
+    experiment = ProcessExperiment( experiment, ExperimentIteration() )
     return experiment
 
 
-def doSingleExperiment(experiment, render_steps=False):
-    agent = experiment.getAgent()
-    agent.reset()
-    experiment.doEpisode(render_steps)
-    if render_steps is False:
-        experiment.processLastReward()              ## store final reward for learner
-        experiment.learn()
+class ExperimentIteration:
+
+    def __init__(self):
+        self.iteration = 0
+
+    def __call__(self, experiment, render_steps=False):
+        self.iteration += 1
+
+        agent = experiment.getAgent()
+        agent.reset()
+        experiment.doEpisode(render_steps)
+        if render_steps is False:
+            experiment.processLastReward()              ## store final reward for learner
+            experiment.learn()
+
+        if self.iteration % 100 == 0:
+            totalReward = experiment.getCumulativeReward()
+            print("Episode ended: %i total reward: %d rate: %f" % (self.iteration, totalReward, totalReward / self.iteration) )
 
 
 def copyAgentState(fromAgent, currAgent):
@@ -149,14 +160,14 @@ def copyAgentState(fromAgent, currAgent):
 
 render_steps = False
 render_demo = False
-parallel_exps = 2
-round_epochs = 100
+parallel_exps = 1
+round_epochs = 1000
 # rounds_num = int(1000 / round_epochs)
 rounds_num = 1
 
 
-experiment = MultiExperiment( parallel_exps, createExperimentInstance, doSingleExperiment, copyAgentState )
-# experiment = ProcessExperiment( createExperimentInstance(), doSingleExperiment )
+experiment = MultiExperiment( parallel_exps, createExperimentInstance, copyAgentState )
+# experiment = createExperimentInstance()
 
 
 ## prevents "ImportError: sys.meta_path is None, Python is likely shutting down"
@@ -185,8 +196,9 @@ for i in range(1, rounds_num + 1):
 # print("Final demonstration, reward: %d" % ( reward ) )
 
 procEndTime = time.time()
-print("Duration:", (procEndTime - procStartTime), "sec")
 
-print("\nDone")
+print("")
+print("Duration:", (procEndTime - procStartTime), "sec")
+print("Done")
 
 experiment.close()
