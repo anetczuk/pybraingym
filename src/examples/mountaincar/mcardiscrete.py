@@ -143,7 +143,8 @@ for i in range(1, imax + 1):
 procEndTime = time.time()
 print("Duration:", (procEndTime - procStartTime), "sec")
 
-reward = experiment.demonstrate()
+doEpisode( experiment, True )
+reward = task.getCumulativeReward()
 print("\nFinal demonstration, reward: %d" % ( reward ) )
 print("\nDone")
 
