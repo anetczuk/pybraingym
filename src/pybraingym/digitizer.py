@@ -60,7 +60,7 @@ class Digitizer:
         rangeVal = toVal - fromVal
         valStep = rangeVal / (self.states - 1)
         nextVal = fromVal
-        for i in range(1, self.states - 1):
+        for _ in range(1, self.states - 1):
             nextVal += valStep
             ret.append( nextVal )
         ret.append( toVal )
