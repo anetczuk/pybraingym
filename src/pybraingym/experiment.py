@@ -37,6 +37,8 @@ def doEpisode2(experiment, render, learn):
     env = task.env
     agent = experiment.agent
 
+    agent.reset()
+
     if env.done:
         env.reset()
 
@@ -71,13 +73,11 @@ def _doEpisodeIterations(experiment, render=False):
 
 def evaluate( experiment, episodes ):
     task = experiment.task
-    agent = experiment.agent
     
     total_reward = 0
     min_reward = float('inf')
     max_reward = -float('inf')
     for _ in range(1, episodes + 1):
-        agent.reset()
         doEpisode2( experiment, False, False )
         reward = task.getCumulativeReward()
         total_reward += reward

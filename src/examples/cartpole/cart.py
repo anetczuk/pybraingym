@@ -112,6 +112,9 @@ agent = LearningAgent(table, learner)
 
 experiment = Experiment(task, agent)
 
+## prevents "ImportError: sys.meta_path is None, Python is likely shutting down"
+atexit.register( task.close )
+
 
 render_steps = False
 imax = 3000
@@ -120,14 +123,9 @@ imax = 3000
 print("\nStarting")
 
 
-## prevents "ImportError: sys.meta_path is None, Python is likely shutting down"
-atexit.register( task.close )
-
-
 total_reward = 0
 
 for i in range(1, imax + 1):
-    agent.reset()
     doEpisode( experiment, render_steps )
 
     total_reward += task.getCumulativeReward()

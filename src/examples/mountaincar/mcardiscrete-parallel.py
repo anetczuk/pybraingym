@@ -126,8 +126,6 @@ class ExperimentIteration:
         pass
 
     def __call__(self, experiment, iteration, render_steps=False):
-        agent = experiment.getAgent()
-        agent.reset()
         experiment.doEpisode(render_steps)
         if render_steps is False:
             experiment.processLastReward()              ## store final reward for learner

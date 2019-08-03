@@ -144,7 +144,6 @@ if render_steps:
 
 total_reward = 0
 for i in range(1, imax + 1):
-    agent.reset()
     doEpisode( experiment, render_steps )
 
     total_reward += task.getCumulativeReward()

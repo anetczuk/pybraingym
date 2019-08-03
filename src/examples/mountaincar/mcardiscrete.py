@@ -173,7 +173,6 @@ period_reward = 0
 procStartTime = time.time()
 
 for i in range(1, imax + 1):
-    agent.reset()
     doEpisode( experiment, render_steps )
 
     reward = task.getCumulativeReward()
