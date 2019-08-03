@@ -24,12 +24,12 @@
 #
 
 
-# import time
+import time
 import gym
 
 from pybraingym.environment import Transformation
 from pybraingym.task import GymTask
-from pybraingym.experiment import doEpisode, processLastReward
+from pybraingym.experiment import doEpisode, processLastReward, evaluate
 from pybraingym.digitizer import Digitizer, ArrayDigitizer
 
 from pybrain.rl.learners.valuebased import ActionValueTable
@@ -77,10 +77,10 @@ gymRawEnv = gym.make('CartPole-v1')
 ## env.tags['wrapper_config.TimeLimit.max_episode_steps'] = 500
 
 
-cartPositionGroup = Digitizer.buildBins(-2.4, 2.4, 4)       ## terminates when outside range (-2.4, 2.4)
+cartPositionGroup = Digitizer.buildBins(-2.4, 2.4, 6)       ## terminates when outside range (-2.4, 2.4)
 cartVelocityGroup = Digitizer.buildBins(-1.0, 1.0, 3)
 poleAngleGroup = Digitizer.buildBins(-12.0, 12.0, 2)        ## terminates when outside range (-12, 12)
-poleVelocityGroup = Digitizer.buildBins(-4.0, 4.0, 8)
+poleVelocityGroup = Digitizer.buildBins(-4.0, 4.0, 4)
 
 print("Cart position bins:", cartPositionGroup)
 print("Cart velocity bins:", cartVelocityGroup)
@@ -107,6 +107,8 @@ table.initialize(0.0)
 # learner = Q(0.5, 0.99)
 learner = SARSA(0.5, 0.99)
 # learner = QLambda(0.5, 0.99, 0.9)
+explorer = learner.explorer
+explorer.decay = 0.999992
 
 agent = LearningAgent(table, learner)
 
@@ -116,31 +118,47 @@ experiment = Experiment(task, agent)
 atexit.register( task.close )
 
 
+render_demo = False
 render_steps = False
-imax = 3000
+imax = 7000
+period_print = 100
+eval_periods = 100
 
 
 print("\nStarting")
 
 
 total_reward = 0
+period_reward = 0
+
+procStartTime = time.time()
 
 for i in range(1, imax + 1):
     doEpisode( experiment, render_steps )
 
-    total_reward += task.getCumulativeReward()
+    reward = task.getCumulativeReward()
+    total_reward += reward
+    period_reward += reward
     processLastReward(task, agent)              ## store final reward for learner
 
     agent.learn()
 
-    if i % 100 == 0:
-        print("Episode ended: %i/%i reward: %d total reward: %d rate: %f" % (i, imax, task.getCumulativeReward(), total_reward, total_reward / i) )
+    if i % period_print == 0:
+        epsil = explorer.epsilon
+        print("Episode ended: %i/%i period reward: %f total reward: %d rate: %f epsilon: %f" % (i, imax, period_reward / period_print, total_reward, total_reward / i, epsil) )
+        period_reward = 0
 
-    if i % 1000 == 0:
+    if render_demo and i % 1000 == 0:
         doEpisode( experiment, True )
+
+procEndTime = time.time()
+print("Duration:", (procEndTime - procStartTime), "sec")
+
+
+evaluation = evaluate( experiment, eval_periods )
+print( "Evaluation:", evaluation )
 
 
 print("\nDone")
 
 task.close()
-

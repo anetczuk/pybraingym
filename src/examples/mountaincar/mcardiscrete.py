@@ -28,7 +28,7 @@ import gym
 
 from pybraingym.environment import Transformation
 from pybraingym.task import GymTask
-from pybraingym.experiment import doEpisode, evaluate, processLastReward
+from pybraingym.experiment import doEpisode, processLastReward, evaluate
 from pybraingym.digitizer import Digitizer, ArrayDigitizer
 
 from pybrain.rl.learners.valuebased import ActionValueTable
@@ -184,7 +184,7 @@ for i in range(1, imax + 1):
 
     if i % period_print == 0:
         epsil = explorer.epsilon
-        print("Episode ended: %i/%i reward: %d period reward: %f total reward: %d rate: %f epsilon: %f" % (i, imax, reward, period_reward / period_print, total_reward, total_reward / i, epsil) )
+        print("Episode ended: %i/%i period reward: %f total reward: %d rate: %f epsilon: %f" % (i, imax, period_reward / period_print, total_reward, total_reward / i, epsil) )
         period_reward = 0
 
     if render_demo and i % 1000 == 0:
