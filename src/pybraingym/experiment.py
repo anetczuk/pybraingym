@@ -26,6 +26,13 @@ import time
 
 
 def doEpisode(experiment, demonstrate=False):
+    if demonstrate:
+        doEpisode2(experiment, demonstrate, False )
+    else:
+        doEpisode2(experiment, demonstrate, True )
+
+
+def doEpisode2(experiment, render, learn):
     task = experiment.task
     env = task.env
     agent = experiment.agent
@@ -35,20 +42,50 @@ def doEpisode(experiment, demonstrate=False):
 
     agent.newEpisode()
 
-    if demonstrate is False:
+    if learn is True:
+        _doEpisodeIterations(experiment, render)
+    else:            
+        prevlearning = agent.learning
+        agent.learning = False
+        _doEpisodeIterations(experiment, render)
+        agent.learning = prevlearning
+
+
+def _doEpisodeIterations(experiment, render=False):
+    task = experiment.task
+    env = task.env
+    
+    if render is False:
         while(env.done is False):
             experiment.doInteractions(1)
         return
 
-    prevlearning = agent.learning
-    agent.learning = False
+    ## with rendering
     while(True):
         env.render()
         time.sleep(0.02)
         if env.done:
             break
         experiment.doInteractions(1)
-    agent.learning = prevlearning
+
+
+def evaluate( experiment, episodes ):
+    task = experiment.task
+    agent = experiment.agent
+    
+    total_reward = 0
+    min_reward = float('inf')
+    max_reward = -float('inf')
+    for _ in range(1, episodes + 1):
+        agent.reset()
+        doEpisode2( experiment, False, False )
+        reward = task.getCumulativeReward()
+        total_reward += reward
+        if reward > max_reward:
+            max_reward = reward
+        if reward < min_reward:
+            min_reward = reward
+    return (min_reward, max_reward, total_reward / episodes)
 
 
 def processLastReward(task, agent):
