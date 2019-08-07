@@ -12,6 +12,8 @@ from collections import defaultdict
 from collections import deque
 import sys
 import math
+import time
+
 
 class Agent:
 
@@ -78,7 +80,7 @@ class Agent:
         self.Q[state][action] = old_Q + (self.alpha * (reward + (self.gamma * np.max(self.Q[next_state]) - old_Q)))
 
 
-def interact(env, agent, num_episodes=20000, window=100):
+def interact(env, agent, num_episodes=20000, window=100, render=False):
     """ Monitor agent's performance.
 
     Params
@@ -103,6 +105,9 @@ def interact(env, agent, num_episodes=20000, window=100):
     for i_episode in range(1, num_episodes+1):
         # begin the episode
         state = env.reset()
+        if render:
+            env.render()
+            time.sleep(0.2)
         # initialize the sampled reward
         samp_reward = 0
         while True:
@@ -110,8 +115,12 @@ def interact(env, agent, num_episodes=20000, window=100):
             action = agent.select_action(state)
             # agent performs the selected action
             next_state, reward, done, _ = env.step(action)
-            # agent performs internal updates based on sampled experience
-            agent.step(state, action, reward, next_state, done)
+            if render:
+                env.render()
+                time.sleep(0.2)
+            else:
+                # agent performs internal updates based on sampled experience
+                agent.step(state, action, reward, next_state, done)
             # update the sampled reward
             samp_reward += reward
             # update the state (s <- s') to next time step
@@ -120,7 +129,8 @@ def interact(env, agent, num_episodes=20000, window=100):
                 # save final sampled reward
                 samp_rewards.append(samp_reward)
                 break
-        if (i_episode >= 100):
+            
+        if (i_episode >= window):
             # get average reward from last 100 episodes
             avg_reward = np.mean(samp_rewards)
             # append to deque
@@ -139,6 +149,15 @@ def interact(env, agent, num_episodes=20000, window=100):
     return avg_rewards, best_avg_reward
 
 
+def demonstrate(env, agent):
+    oldEps = agent.epsilon
+    agent.epsilon = 0.0
+    interact(env, agent, num_episodes=1, window=1, render=True)
+    agent.epsilon = oldEps
+
+
 env = gym.make('Taxi-v2')
 agent = Agent()
 avg_rewards, best_avg_reward = interact(env, agent)
+
+demonstrate(env, agent)
