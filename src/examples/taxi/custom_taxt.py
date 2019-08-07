@@ -58,7 +58,7 @@ def epoch(render=False):
         
         if render==False:
             #we calculate Q value of the previous state using our update rule
-            Q[(state,action)] += alpha * (reward + gamma * Q[(nextstate,nextaction)]-Q[(state,action)])
+            Q[(state,action)] += alpha * (reward + gamma * Q[(nextstate,nextaction)] - Q[(state,action)])
             
         #finally we update our state and action with next action
         #and next state

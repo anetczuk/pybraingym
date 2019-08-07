@@ -31,6 +31,12 @@ class GymEnvironment(Environment):
     def __init__(self, gymRawEnv):
         Environment.__init__(self)
 
+        observationSpace = gymRawEnv.observation_space
+        if type(observationSpace) == Discrete:
+            self.outdim = 1
+            self.discreteStates = True
+            self.numStates = observationSpace.n
+
         actionSpace = gymRawEnv.action_space
         if type(actionSpace) == Discrete:
             self.indim = 1
@@ -103,7 +109,9 @@ class GymEnvironment(Environment):
 class Transformation:
 
     def observation(self, observationValue):
-        """Transform observation value received from OpenAi Gym. Transformed value is passed to PyBrain."""
+        """Transform observation value received from OpenAi Gym. Transformed value is passed to PyBrain.
+           For discrete observations Gym often returns single value, but PyBrain always requires array.
+        """
         return observationValue
 
     def action(self, actionValue):
