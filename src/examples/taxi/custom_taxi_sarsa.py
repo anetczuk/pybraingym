@@ -80,15 +80,15 @@ def epoch(render=False):
 
 
 period_rewards = deque(maxlen=100)
-best_reward = float('-inf')
+best_avg_reward = float('-inf')
 
 for i in range(4000):
     reward = epoch()
-    if reward > best_reward:
-        best_reward = reward
     period_rewards.append(reward)
     avg_reward = np.mean(period_rewards)
-    print( "Epoch: %5d  reward: %3d  avg: %f  best reward: %3d" % (i, reward, avg_reward, best_reward) )
+    if avg_reward > best_avg_reward:
+        best_avg_reward = avg_reward
+    print( "Epoch: %5d  reward: %3d  avg: %f  best avg reward: %f" % (i, reward, avg_reward, best_avg_reward) )
 
 
 reward = epoch(True)
