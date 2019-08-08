@@ -22,7 +22,7 @@
 #
 
 
-from pybraingym.experiment import doEpisode, processLastReward
+from pybraingym.experiment import doEpisode, processLastReward, evaluate
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.managers import BaseManager
 
@@ -49,6 +49,10 @@ class AbstractExperiment(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def getCumulativeReward(self):
+        raise NotImplementedError('You need to define this method in derived class!')
+
+    @abc.abstractmethod
+    def evaluate(self, number=1):
         raise NotImplementedError('You need to define this method in derived class!')
 
     @abc.abstractmethod
@@ -87,6 +91,9 @@ class ProcessExperiment(AbstractExperiment):
 
     def getCumulativeReward(self):
         return self.cumulativeReward
+
+    def evaluate(self, number=1):
+        return evaluate( self.exp, number )
 
     def demonstrate(self):
         self.doExperiment(1, True)
@@ -136,6 +143,9 @@ class ManagedExperiment(AbstractExperiment):
     def getCumulativeReward(self):
         return self.exp.getCumulativeReward()
 
+    def evaluate(self, number=1):
+        return self.exp.evaluate( number )
+
     def demonstrate(self):
         return self.exp.demonstrate()
 
@@ -145,7 +155,7 @@ class ManagedExperiment(AbstractExperiment):
 
 class MultiExperiment(object):
 
-    def __init__(self, experimentsNumber, createExperimentInstance, copyAgentState):
+    def __init__(self, experimentsNumber, createExperimentInstance, copyAgentState=None):
         self.stepid = 0
         self.bestExperiment = None
         self.expNum = experimentsNumber
@@ -174,9 +184,10 @@ class MultiExperiment(object):
         with ThreadPoolExecutor( max_workers=self.expNum ) as pool:
             pool.map(MultiExperiment.processExperiment, paramsList)
 
-        ## calculate best actor
+        ## find best actor
         self.bestExperiment = self.getMaxRewardExperimentIndex()
-        self._propagateBestResult()
+        if self.copyAgentState is not None:
+            self._propagateBestResult()
 
     @staticmethod
     def processExperiment(params):
@@ -205,6 +216,38 @@ class MultiExperiment(object):
                 retIndex = i
         return retIndex
 
+    def getBestExperiment(self):
+        assert self.bestExperiment >= 0
+        return self.experiments[ self.bestExperiment ]
+    
+    def evaluate(self, number=1):
+        ## execute experiments
+        if self.expNum == 1:
+            exp = self.experiments[0]
+            return exp.evaluate(number)
+
+        paramsList = []
+        for exp in self.experiments:
+            paramsList.append( (exp, number) )
+
+        with ThreadPoolExecutor( max_workers=self.expNum ) as pool:
+            ret = pool.map(MultiExperiment.processEvaluation, paramsList)
+        
+        retData = []
+        while True:
+            try:
+                item = next(ret) # lst_iterator.__next__()
+                retData.append( item )
+            except StopIteration:
+                break
+        return retData
+
+    @staticmethod
+    def processEvaluation(params):
+        experiment = params[0]
+        number = params[1]
+        return experiment.evaluate(number)
+    
     def demonstrate(self):
         assert self.bestExperiment >= 0
         bestExp = self.experiments[ self.bestExperiment ]
@@ -225,3 +268,10 @@ class MultiExperiment(object):
             agent = exp.getAgent()
             newAgent = self.copyAgentState(bestAgent, agent)
             exp.setAgent( newAgent )
+
+
+def executeExperiments(multiExperiment, rounds, epochs_per_round):
+    for i in range(1, rounds + 1):
+        multiExperiment.doExperiment(epochs_per_round, False)
+        reward = multiExperiment.getCumulativeReward()
+        print("Round ended: %i/%i best reward: %d per epoch: %f" % (i, rounds, reward, reward / epochs_per_round) )
