@@ -127,7 +127,7 @@ print("\nStarting")
  
 total_reward = 0
 period_rewards = deque( maxlen=2 * period_print )
-best_reward = float('-inf')
+best_avg_reward = float('-inf')
  
 procStartTime = time.time()
  
@@ -136,17 +136,16 @@ for i in range(1, imax + 1):
  
     reward = task.getCumulativeReward()
     total_reward += reward
-    if reward > best_reward:
-        best_reward = reward
     period_rewards.append(reward)
+    avg_reward = np.mean(period_rewards)
+    if avg_reward > best_avg_reward:
+        best_avg_reward = avg_reward
     processLastReward(task, agent)              ## store final reward for learner
  
     agent.learn()
  
     if i % period_print == 0:
-        epsil = explorer.epsilon
-        avg_reward = np.mean(period_rewards)
-        print("Episode ended: %i/%i period reward: %f total reward: %d best reward: %d rate: %f epsilon: %f" % (i, imax, avg_reward, total_reward, best_reward, total_reward / i, epsil) )
+        print("Episode ended: %i/%i period reward: %f total reward: %d best avg reward: %f rate: %f" % (i, imax, avg_reward, total_reward, best_avg_reward, total_reward / i) )
  
     if render_demo and i % 1000 == 0:
         doEpisode( experiment, True )
