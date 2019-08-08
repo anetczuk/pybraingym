@@ -33,13 +33,15 @@ from pybraingym.interface import ActionValueTableWrapper
 from pybraingym.experiment import doEpisode, processLastReward, evaluate, demonstrate
 
 from pybrain.rl.learners.valuebased import ActionValueTable
-from pybrain.rl.learners import Q
-# from pybrain.rl.learners import SARSA, QLambda
+from pybrain.rl.learners import Q, SARSA
+# from pybrain.rl.learners import QLambda
 from pybrain.rl.agents import LearningAgent
 from pybrain.rl.experiments import Experiment
 
 import atexit
 import pylab
+import numpy as np
+from collections import deque
 
 
 ## =============================================================================
@@ -100,17 +102,10 @@ table.initialize(0.0)
 ## alpha -- learning rate (preference of new information)
 ## gamma -- discount factor (importance of future reward)
 
-##
-## SARSA fails to learn. It finds best solution to stay in place.
-##
-learner = Q(0.5, 0.99)
-# learner = SARSA(0.5, 0.99)
+learner = Q(0.2, 0.99)
+# learner = SARSA(0.2, 0.99)
 ## learner = QLambda(0.5, 0.99, 0.9)
 explorer = learner.explorer
-
-##
-## epsilon decay does not allow to find best solution
-## 
 explorer.decay = 1.0
  
 agent = LearningAgent(table, learner)
@@ -131,7 +126,8 @@ print("\nStarting")
  
  
 total_reward = 0
-period_reward = 0
+period_rewards = deque( maxlen=2 * period_print )
+best_reward = float('-inf')
  
 procStartTime = time.time()
  
@@ -140,15 +136,17 @@ for i in range(1, imax + 1):
  
     reward = task.getCumulativeReward()
     total_reward += reward
-    period_reward += reward
+    if reward > best_reward:
+        best_reward = reward
+    period_rewards.append(reward)
     processLastReward(task, agent)              ## store final reward for learner
  
     agent.learn()
  
     if i % period_print == 0:
         epsil = explorer.epsilon
-        print("Episode ended: %i/%i period reward: %f total reward: %d rate: %f epsilon: %f" % (i, imax, period_reward / period_print, total_reward, total_reward / i, epsil) )
-        period_reward = 0
+        avg_reward = np.mean(period_rewards)
+        print("Episode ended: %i/%i period reward: %f total reward: %d best reward: %d rate: %f epsilon: %f" % (i, imax, avg_reward, total_reward, best_reward, total_reward / i, epsil) )
  
     if render_demo and i % 1000 == 0:
         doEpisode( experiment, True )
@@ -166,10 +164,10 @@ reward = task.getCumulativeReward()
 print("\nFinal demonstration, reward: %d" % ( reward ) )
 
  
-print("Printing data matrix")
+print("Showing data")
 data = table.stateArray
 data = data.reshape(20, 25)
-print("Data:\n", data)
+## print("Data:\n", data)
 pylab.pcolor(data)
 pylab.colorbar()
 pylab.draw()

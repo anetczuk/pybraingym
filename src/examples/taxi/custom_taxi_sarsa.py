@@ -8,13 +8,15 @@
 import gym
 import random
 import time
+from collections import deque
+import numpy as np
 
 
 env = gym.make('Taxi-v2')
 
-alpha = 0.85
+alpha = 0.1
 gamma = 0.90
-epsilon = 0.8
+epsilon = 0.2
 
 #Then we initialize Q table as dictionary for storing the state-action values
 Q = {}
@@ -58,7 +60,10 @@ def epoch(render=False):
         
         if render==False:
             #we calculate Q value of the previous state using our update rule
-            Q[(state,action)] += alpha * (reward + gamma * Q[(nextstate,nextaction)] - Q[(state,action)])
+            currValue = Q[(state,action)]
+            nextValue = Q[(nextstate,nextaction)]
+            updateValue = alpha * (reward + gamma * nextValue - currValue)
+            Q[(state,action)] += updateValue
             
         #finally we update our state and action with next action
         #and next state
@@ -74,10 +79,19 @@ def epoch(render=False):
     return r
 
 
+period_rewards = deque(maxlen=100)
+best_reward = float('-inf')
+
 for i in range(4000):
     reward = epoch()
-    print( "Epoch: %d reward: %d" % (i, reward) )
+    if reward > best_reward:
+        best_reward = reward
+    period_rewards.append(reward)
+    avg_reward = np.mean(period_rewards)
+    print( "Epoch: %5d  reward: %3d  avg: %f  best reward: %3d" % (i, reward, avg_reward, best_reward) )
 
-epoch(True)
+
+reward = epoch(True)
+print( "\nDemonstration reward: %d\n" % ( reward ) )
 
 env.close()
