@@ -64,6 +64,7 @@ class GymEnvironment(Environment):
 
     def setTransformation(self, transformation):
         self.transform = transformation
+        self.transform.env = self
 
     # ==========================================================================
 
@@ -107,6 +108,17 @@ class GymEnvironment(Environment):
 
 
 class Transformation:
+    
+    def __init__(self):
+        self._env = None
+
+    @property
+    def env(self):
+        return self._env
+
+    @env.setter
+    def env(self, new_env):
+        self._env = new_env
 
     def observation(self, observationValue):
         """Transform observation value received from OpenAi Gym. Transformed value is passed to PyBrain.

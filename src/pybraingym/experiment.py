@@ -68,6 +68,7 @@ def _doEpisodeIterations(experiment, render=False, delay=0.02):
         if delay > 0:
             time.sleep( delay )
         experiment.doInteractions(1)
+    env.render()
 
 
 def evaluate( experiment, episodes ):
