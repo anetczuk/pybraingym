@@ -25,11 +25,16 @@
 
 
 import time
+import atexit
+import pylab
+import numpy as np
+from collections import deque
+
 import gym
 
 from pybraingym.environment import Transformation
 from pybraingym.task import GymTask
-from pybraingym.parallelexperiment import ProcessExperiment, MultiExperiment, executeExperiments
+from pybraingym.parallelexperiment import ProcessExperiment, createExperiment, executeExperiments
 from pybraingym.interface import ActionValueTableWrapper
 from pybraingym.experiment import doEpisode, processLastReward, evaluate, demonstrate
 
@@ -38,11 +43,6 @@ from pybrain.rl.learners import Q, SARSA
 # from pybrain.rl.learners import QLambda
 from pybrain.rl.agents import LearningAgent
 from pybrain.rl.experiments import Experiment
-
-import atexit
-import pylab
-import numpy as np
-from collections import deque
 
 
 ## =============================================================================
@@ -86,8 +86,8 @@ class EnvTransformation(Transformation):
 
 def createAgent(module):
     ### create agent with controller and learner - use SARSA(), Q() or QLambda() here
-    ## alpha -- learning rate (preference of new information)
-    ## gamma -- discount factor (importance of future reward)
+    ## alpha -- learning rate (preference of new information -- update value factor)
+    ## gamma -- discount factor (importance of future reward -- next value factor)
     
     learner = Q(0.2, 0.99)
     # learner = SARSA(0.2, 0.99)
@@ -103,6 +103,18 @@ def copyAgentState(fromAgent, currAgent):
     newModule = fromAgent.module.copy()
     newAgent = createAgent( newModule )
     return newAgent
+
+
+def experimentIteration( experiment, iteration, render_steps=False ):
+    experiment.doEpisode(render_steps)
+    if render_steps is False:
+        experiment.processLastReward()              ## store final reward for learner
+        experiment.learn()
+
+    if iteration % 100 == 0:
+        reward = experiment.getReward()
+        totalReward = experiment.getCumulativeReward() + reward
+        print("Episode ended: %i total reward: %d rate: %f" % (iteration, totalReward, totalReward / iteration ))
 
 
 def createExperimentInstance():
@@ -127,18 +139,6 @@ def createExperimentInstance():
     return experiment
 
 
-def experimentIteration( experiment, iteration, render_steps=False ):
-    experiment.doEpisode(render_steps)
-    if render_steps is False:
-        experiment.processLastReward()              ## store final reward for learner
-        experiment.learn()
-
-    if iteration % 100 == 0:
-        reward = experiment.getReward()
-        totalReward = experiment.getCumulativeReward() + reward
-        print("Episode ended: %i total reward: %d rate: %f" % (iteration, totalReward, totalReward / iteration ))
-
-
 ## =============================================================================
 
 
@@ -156,8 +156,7 @@ eval_periods = 100
 # eval_periods = 100
 
 
-experiment = MultiExperiment( parallel_exps, createExperimentInstance, copyAgentState )
-# experiment = createExperimentInstance()
+experiment = createExperiment( parallel_exps, createExperimentInstance, copyAgentState )
 
 
 ## prevents "ImportError: sys.meta_path is None, Python is likely shutting down"
@@ -186,6 +185,7 @@ print( "Evaluation:", evaluation )
  
 reward = experiment.demonstrate()
 print("\nFinal demonstration, reward: %d" % ( reward ) )
-print("\nDone")
 
 experiment.close()
+
+print("\nDone")

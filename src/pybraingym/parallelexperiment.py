@@ -70,7 +70,7 @@ class ProcessExperiment(AbstractExperiment):
     def __init__(self, experiment, doSingleExperiment):
         self.exp = experiment
         self.cumulativeReward = 0
-        self.handleExperiment = doSingleExperiment
+        self.experimentExecutor = doSingleExperiment
 
     def getAgent(self):
         return self.exp.agent
@@ -78,10 +78,13 @@ class ProcessExperiment(AbstractExperiment):
     def setAgent(self, newAgent):
         self.exp.agent = newAgent
 
+    def getExecutor(self):
+        return self.experimentExecutor
+
     def doExperiment( self, number=1, render_steps=False ):
         self.cumulativeReward = 0
         for i in range(1, number+1):
-            self.handleExperiment( self, i, render_steps )
+            self.experimentExecutor( self, i, render_steps )
             task = self.exp.task
             self.cumulativeReward += task.getCumulativeReward()
 
@@ -153,6 +156,9 @@ class ManagedExperiment(AbstractExperiment):
         self.exp.close()
 
 
+## ===========================================================================
+
+
 class MultiExperiment(object):
 
     def __init__(self, experimentsNumber, createExperimentInstance, copyAgentState=None):
@@ -161,23 +167,13 @@ class MultiExperiment(object):
         self.expNum = experimentsNumber
         self.copyAgentState = copyAgentState
         self.experiments = []
-        if self.expNum == 1:
-            exp = createExperimentInstance()
-            self.experiments.append( exp )
-        else:
-            for _ in range(0, self.expNum):
-                procExp = ManagedExperiment( createExperimentInstance )
-                self.experiments.append( procExp )
+        for _ in range(0, self.expNum):
+            procExp = ManagedExperiment( createExperimentInstance )
+            self.experiments.append( procExp )
 
     def doExperiment(self, number=1, render_steps=False):
         self.bestExperiment = None
         ## execute experiments
-        if self.expNum == 1:
-            exp = self.experiments[0]
-            exp.doExperiment(number, render_steps)
-            self.bestExperiment = 0
-            return
-
         paramsList = []
         for exp in self.experiments:
             paramsList.append( (exp, number, render_steps) )
@@ -218,14 +214,11 @@ class MultiExperiment(object):
 
     def getBestExperiment(self):
         assert self.bestExperiment >= 0
-        return self.experiments[ self.bestExperiment ]
+        bestExp = self.experiments[ self.bestExperiment ]
+        return bestExp.exp
     
     def evaluate(self, number=1):
-        ## execute experiments
-        if self.expNum == 1:
-            exp = self.experiments[0]
-            return exp.evaluate(number)
-
+        ## evaluate experiments
         paramsList = []
         for exp in self.experiments:
             paramsList.append( (exp, number) )
@@ -268,6 +261,12 @@ class MultiExperiment(object):
             agent = exp.getAgent()
             newAgent = self.copyAgentState(bestAgent, agent)
             exp.setAgent( newAgent )
+            
+
+def createExperiment(experimentsNumber, createExperimentInstance, copyAgentState=None):
+    if experimentsNumber == 1:
+        return createExperimentInstance()
+    return MultiExperiment( experimentsNumber, createExperimentInstance, copyAgentState )
 
 
 def executeExperiments(multiExperiment, rounds, epochs_per_round):

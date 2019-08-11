@@ -25,6 +25,11 @@
 
 
 import time
+import atexit
+import pylab
+from collections import deque
+import numpy as np
+
 import gym
 
 from pybraingym.environment import Transformation
@@ -37,13 +42,11 @@ from pybrain.rl.learners import SARSA, Q, QLambda
 from pybrain.rl.agents import LearningAgent
 from pybrain.rl.experiments import Experiment
 
-import atexit
-
 
 ## =============================================================================
 
 
-class CartTransformation(Transformation):
+class EnvTransformation(Transformation):
 
     def __init__(self, observationDigitizer):
         self.observationDigitizer = observationDigitizer
@@ -71,6 +74,10 @@ class CartTransformation(Transformation):
 ##        pole angle (-41.8, 41.8)
 ##        pole vel: (-inf, inf)
 
+## Reward:
+##        A reward of +1 is provided for every timestep that the pole remains upright. 
+
+
 gymRawEnv = gym.make('CartPole-v1')
 # gymRawEnv = gym.make('CartPole-v0')
 
@@ -88,7 +95,7 @@ print("Pole angle bins:", poleAngleGroup)
 print("Pole velocity bins:", poleVelocityGroup)
 
 observationDigitizer = ArrayDigitizer( [ cartPositionGroup, cartVelocityGroup, poleAngleGroup, poleVelocityGroup ] )
-transformation = CartTransformation(observationDigitizer)
+transformation = EnvTransformation(observationDigitizer)
 
 task = GymTask.createTask(gymRawEnv)
 env = task.env

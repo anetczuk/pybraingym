@@ -25,6 +25,11 @@
 
 
 import time
+import atexit
+import pylab
+import numpy as np
+from collections import deque
+
 import gym
 
 from pybraingym.environment import Transformation
@@ -37,11 +42,6 @@ from pybrain.rl.learners import Q, SARSA
 # from pybrain.rl.learners import QLambda
 from pybrain.rl.agents import LearningAgent
 from pybrain.rl.experiments import Experiment
-
-import atexit
-import pylab
-import numpy as np
-from collections import deque
 
 
 ## =============================================================================
@@ -133,16 +133,15 @@ procStartTime = time.time()
  
 for i in range(1, imax + 1):
     doEpisode( experiment )
+    processLastReward(task, agent)              ## store final reward for learner
+    agent.learn()
  
     reward = task.getCumulativeReward()
     total_reward += reward
     period_rewards.append(reward)
     avg_reward = np.mean(period_rewards)
     if avg_reward > best_avg_reward:
-        best_avg_reward = avg_reward
-    processLastReward(task, agent)              ## store final reward for learner
- 
-    agent.learn()
+        best_avg_reward = avg_reward 
  
     if i % period_print == 0:
         print("Episode ended: %i/%i period reward: %f total reward: %d best avg reward: %f rate: %f" % (i, imax, avg_reward, total_reward, best_avg_reward, total_reward / i) )

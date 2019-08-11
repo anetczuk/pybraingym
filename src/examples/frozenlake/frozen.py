@@ -209,22 +209,18 @@ print("\nFinal demonstration, reward: %d" % ( reward ) )
 success_rate = best_period_reward / period_rewards.maxlen * 100
 print("Success rate: %d%%" % ( success_rate ) )
 
-
-print("\n\nDone")
-
 task.reset()
 task.render()
-
-task.close()
-
 
 print( "\nValues:\n", table.params.reshape(16, 4), sep='' )
 
 print( "\nBest actions:\n", getBestReadableActions(), sep='' )
 
+task.close()
 
 if render_steps:
     plotData()
     pylab.ioff()
     pylab.show()
 
+print("\n\nDone")
