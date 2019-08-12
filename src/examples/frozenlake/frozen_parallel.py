@@ -164,8 +164,9 @@ class ExperimentIteration:
             reward = experiment.getReward()
             totalReward = experiment.getCumulativeReward() + reward
             quality = experiment.getQuality()
-            rate = quality.getBestPeriodReward()
-            print( "Episode ended: %i total reward: %d highest period reward: %f" % (iteration, totalReward, rate) )
+            rate = quality.getRate()
+            bestRate = quality.getBestPeriodReward()
+            print( "Episode ended: %i total reward: %d rate: %d highest period reward: %d" % (iteration, totalReward, rate, bestRate) )
 
 
 class QualityFunctor:
@@ -177,6 +178,9 @@ class QualityFunctor:
 
     def getBestPeriodReward(self):
         return self.best_period_reward
+
+    def getRate(self):
+        return self.rate
 
     def getSuccessRate(self):
         success_rate = self.best_period_reward / self.period_rewards.maxlen * 100
@@ -219,7 +223,7 @@ def createExperimentInstance():
 render_steps = False
 parallel_exps = 8
 round_epochs = 3000
-rounds_num = 1
+rounds_num = 2
 
 
 experiment = createExperiment( parallel_exps, createExperimentInstance, copyAgentState )
