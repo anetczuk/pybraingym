@@ -57,11 +57,11 @@ class ParallelExperiment(metaclass=abc.ABCMeta):
         raise NotImplementedError('You need to define this method in derived class!')
  
 
-class SingleExperiment(ParallelExperiment):
+class WrapperExperiment(ParallelExperiment):
     
-    def __init__(self, createExperimentInstance):
+    def __init__(self, experiment):
         ParallelExperiment.__init__( self )
-        self.experiment = createExperimentInstance()
+        self.experiment = experiment
     
     def getExperiments(self):
         return [self.experiment]
@@ -195,7 +195,8 @@ class MultiExperiment(ParallelExperiment):
 
 def createExperiment(experimentsNumber, createExperimentInstance, copyAgentState=None):
     if experimentsNumber == 1:
-        return SingleExperiment( createExperimentInstance )
+        exp = createExperimentInstance()
+        return WrapperExperiment( exp )
     else:
         return MultiExperiment( experimentsNumber, createExperimentInstance, copyAgentState )
 

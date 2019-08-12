@@ -161,12 +161,13 @@ class ExperimentIteration:
             experiment.processLastReward()              ## store final reward for learner
             experiment.learn()    
         if iteration % 100 == 0:
+            expId = experiment.getId()
             reward = experiment.getReward()
             totalReward = experiment.getCumulativeReward() + reward
             quality = experiment.getQuality()
             rate = quality.getRate()
             bestRate = quality.getBestPeriodReward()
-            print( "Episode ended: %i total reward: %d rate: %d highest period reward: %d" % (iteration, totalReward, rate, bestRate) )
+            print( "Experiment %s episode ended: %i total reward: %d rate: %d highest period reward: %d" % (expId, iteration, totalReward, rate, bestRate) )
 
 
 class QualityFunctor:

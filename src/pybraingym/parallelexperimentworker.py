@@ -24,6 +24,7 @@
 
 from pybraingym.experiment import doEpisode, processLastReward, evaluate
 from multiprocessing.managers import BaseManager
+from multiprocessing import Value
 
 import abc
 
@@ -70,13 +71,22 @@ class AbstractExperimentWorker(metaclass=abc.ABCMeta):
 class ProcessExperimentWorker(AbstractExperimentWorker):
     """Wrapper for PyBrain's Experiment class."""
 
+    _ids = Value('i', 0)                ## variable shared between all processes
+    
+
     def __init__(self, experiment, doSingleExperiment, qualityFunctor=None):
         AbstractExperimentWorker.__init__( self )
+        #self.objId = procId
+        self.objId = self._ids.value
+        self._ids.value += 1
         self.exp = experiment
         self.cumulativeReward = 0
         self.experimentExecutor = doSingleExperiment
         self.qualityFunctor = qualityFunctor
         self.qualityRate = 0
+
+    def getId(self):
+        return self.objId
 
     def getAgent(self):
         return self.exp.agent
