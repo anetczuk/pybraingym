@@ -22,37 +22,26 @@
 #
 
 
+from pybraingym.parallelexperimentworker import ProcessExperimentWorker as ProcessExperiment    ## backward compatibility
+from pybraingym.parallelexperimentworker import ManagedExperimentWorker
 from pybraingym.experiment import doEpisode, processLastReward, evaluate
 from concurrent.futures import ThreadPoolExecutor
-from multiprocessing.managers import BaseManager
 
 import abc
 
 
-class AbstractExperiment(metaclass=abc.ABCMeta):
+class ParallelExperiment(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
-    def getAgent(self):
+    def getExperiments(self):
         raise NotImplementedError('You need to define this method in derived class!')
-
-    @abc.abstractmethod
-    def setAgent(self, newAgent):
-        raise NotImplementedError('You need to define this method in derived class!')
-
+ 
     @abc.abstractmethod
     def doExperiment(self, number=1, render_steps=False):
         raise NotImplementedError('You need to define this method in derived class!')
-
-    @abc.abstractmethod
-    def getReward(self):
-        raise NotImplementedError('You need to define this method in derived class!')
-
+ 
     @abc.abstractmethod
     def getCumulativeReward(self):
-        raise NotImplementedError('You need to define this method in derived class!')
-
-    @abc.abstractmethod
-    def evaluate(self, number=1):
         raise NotImplementedError('You need to define this method in derived class!')
 
     @abc.abstractmethod
@@ -60,116 +49,57 @@ class AbstractExperiment(metaclass=abc.ABCMeta):
         raise NotImplementedError('You need to define this method in derived class!')
 
     @abc.abstractmethod
-    def close(self):
+    def getBestExperiment(self):
         raise NotImplementedError('You need to define this method in derived class!')
 
-
-class ProcessExperiment(AbstractExperiment):
-    """Wrapper for PyBrain's Experiment class."""
-
-    def __init__(self, experiment, doSingleExperiment):
-        self.exp = experiment
-        self.cumulativeReward = 0
-        self.experimentExecutor = doSingleExperiment
-
-    def getAgent(self):
-        return self.exp.agent
-
-    def setAgent(self, newAgent):
-        self.exp.agent = newAgent
-
-    def getExecutor(self):
-        return self.experimentExecutor
-
-    def doExperiment( self, number=1, render_steps=False ):
-        self.cumulativeReward = 0
-        for i in range(1, number+1):
-            self.experimentExecutor( self, i, render_steps )
-            task = self.exp.task
-            self.cumulativeReward += task.getCumulativeReward()
-
-    def getReward(self):
-        task = self.exp.task
-        return task.getCumulativeReward()
-
-    def getCumulativeReward(self):
-        return self.cumulativeReward
-
-    def evaluate(self, number=1):
-        return evaluate( self.exp, number )
-
-    def demonstrate(self):
-        self.doExperiment(1, True)
-        return self.getCumulativeReward()
-
+    @abc.abstractmethod
     def close(self):
-        self.exp.task.close()
+        raise NotImplementedError('You need to define this method in derived class!')
+ 
 
-    ## =================================================
-
-    def doEpisode(self, demonstrate=False):
-        doEpisode( self.exp, demonstrate )
-
-    def processLastReward(self):
-        task = self.exp.task
-        agent = self.exp.agent
-        processLastReward( task, agent )
-
-    def learn(self):
-        agent = self.exp.agent
-        agent.learn()
-
-
-## ===========================================================================
-
-
-class ManagedExperiment(AbstractExperiment):
-
+class SingleExperiment(ParallelExperiment):
+    
     def __init__(self, createExperimentInstance):
-        self.manager = BaseManager()
-        self.manager.register( 'createExperiment', createExperimentInstance )
-        self.manager.start()
-        self.exp = self.manager.createExperiment()
-
-    def getAgent(self):
-        return self.exp.getAgent()
-
-    def setAgent(self, newAgent):
-        self.exp.setAgent( newAgent )
-
+        ParallelExperiment.__init__( self )
+        self.experiment = createExperimentInstance()
+    
+    def getExperiments(self):
+        return [self.experiment]
+    
     def doExperiment(self, number=1, render_steps=False):
-        self.exp.doExperiment( number, render_steps )
-
-    def getReward(self):
-        return self.exp.getReward()
-
+        self.experiment.doExperiment( number, render_steps )
+    
     def getCumulativeReward(self):
-        return self.exp.getCumulativeReward()
-
-    def evaluate(self, number=1):
-        return self.exp.evaluate( number )
-
+        return self.experiment.getCumulativeReward()
+    
     def demonstrate(self):
-        return self.exp.demonstrate()
-
+        return self.experiment.demonstrate()
+    
+    def getBestExperiment(self):
+        return self.experiment
+    
     def close(self):
-        self.exp.close()
+        self.experiment.close()
 
 
-## ===========================================================================
-
-
-class MultiExperiment(object):
+class MultiExperiment(ParallelExperiment):
 
     def __init__(self, experimentsNumber, createExperimentInstance, copyAgentState=None):
+        ParallelExperiment.__init__( self )
         self.stepid = 0
         self.bestExperiment = None
         self.expNum = experimentsNumber
         self.copyAgentState = copyAgentState
         self.experiments = []
         for _ in range(0, self.expNum):
-            procExp = ManagedExperiment( createExperimentInstance )
+            procExp = ManagedExperimentWorker( createExperimentInstance )
             self.experiments.append( procExp )
+
+    def getExperiments(self):
+        ret = []
+        for exp in self.experiments:
+            ret.append( exp.exp )
+        return ret
 
     def doExperiment(self, number=1, render_steps=False):
         self.bestExperiment = None
@@ -180,8 +110,8 @@ class MultiExperiment(object):
         with ThreadPoolExecutor( max_workers=self.expNum ) as pool:
             pool.map(MultiExperiment.processExperiment, paramsList)
 
-        ## find best actor
-        self.bestExperiment = self.getMaxRewardExperimentIndex()
+        ## find best agent
+        self.bestExperiment = self.getBestExperimentIndex()
         if self.copyAgentState is not None:
             self._propagateBestResult()
 
@@ -197,16 +127,16 @@ class MultiExperiment(object):
         exp = self.experiments[ self.bestExperiment ]
         return exp.getCumulativeReward()
 
-    def getMaxRewardExperimentIndex(self):
+    def getBestExperimentIndex(self):
         if self.expNum < 1:
             return -1
         if self.expNum == 1:
             return 0
         retIndex = 0
-        maxRew = self.experiments[0].getCumulativeReward()
+        maxRew = self.experiments[0].getQualityRate()
         for i in range(1, self.expNum):
             exp = self.experiments[i]
-            rew = exp.getCumulativeReward()
+            rew = exp.getQualityRate()
             if rew > maxRew:
                 maxRew = rew
                 retIndex = i
@@ -265,12 +195,14 @@ class MultiExperiment(object):
 
 def createExperiment(experimentsNumber, createExperimentInstance, copyAgentState=None):
     if experimentsNumber == 1:
-        return createExperimentInstance()
-    return MultiExperiment( experimentsNumber, createExperimentInstance, copyAgentState )
+        return SingleExperiment( createExperimentInstance )
+    else:
+        return MultiExperiment( experimentsNumber, createExperimentInstance, copyAgentState )
 
 
 def executeExperiments(multiExperiment, rounds, epochs_per_round):
     for i in range(1, rounds + 1):
         multiExperiment.doExperiment(epochs_per_round, False)
-        reward = multiExperiment.getCumulativeReward()
-        print("Round ended: %i/%i best reward: %d per epoch: %f" % (i, rounds, reward, reward / epochs_per_round) )
+        bestExp = multiExperiment.getBestExperiment()
+        rate = bestExp.getQualityRate()
+        print("Round ended: %i/%i best rate: %f" % (i, rounds, rate) )
